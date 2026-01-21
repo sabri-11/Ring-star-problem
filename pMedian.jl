@@ -16,11 +16,13 @@ function main()
     nbEtats = length(coords)
 
     print("\n")
-    println("Nous nous intéressons à la résolution du problème du p-médian avec une instance de $nbEtats Etats des Etats Unis. Nous voulons construire des arrêts de métro/bus dans p Etats de manière 
-à minimiser les distances à parcourir à pieds pour les citoyens. Ce sera à vous de choisir le nombre p de stations à construire sachant qu'il ne peut y avoir qu'un maximum de 1 station par Etat\n")
-    println("Nous avons donc implémenté plusieurs manières, plus ou moins bonnes pour résoudre ce problème. Nous avons une méthode Gloutonne, une méthode aléatoire ainsi
+    println("Nous nous intéressons à la résolution du problème de l'anneau étoile avec une instance de $nbEtats Etats des Etats Unis. Nous voulons construire des arrêts de métro/bus dans p Etats de manière 
+à minimiser les distances à parcourir à pieds pour les citoyens puis tracer un cycle reliant toute les stations et de distance minimale. Ce sera à vous de choisir le nombre p de stations à construire sachant qu'il ne peut y avoir qu'un maximum de 1 station par Etat\n")
+    println("Nous avons donc implémenté plusieurs manières, plus ou moins bonnes pour résoudre ce problème. Pour ce qui est de la définition des stations, nous avons une méthode Gloutonne, une méthode aléatoire ainsi
 qu'une résolution avec un programme linéaire donnant nécessairement la meilleure solution. Nous avons également deux méta-heuristiques améliorant les solutions aléatoires et
 gloutonnes en les répétant un certains nombres de fois et ne gardant que la meilleure solution.")
+    println("Pour ce qui est du tracé du cycle reliant toutes les stations entre elles, nous avons 2 méthodes : \n-La méthode du plus proche voisin, qui part de la première station et construit un cycle de 
+station proche en proche.\n-Une amélioration de ce même algorithme par une méthode itérative, empêchant les croisements d'arrêtes.")
 
     while true
         println("\nChoisissez la méthode que vous souhaitez utiliser, entrez : \n
@@ -132,8 +134,6 @@ function choix5(nbEtats)
 end
 
 function choix6(nbEtats)
-    
-    
     
     while true
         println("\nChoisissez la méthode dont vous voulez tester la vitesse d'exécution, entrez : \n
@@ -249,6 +249,7 @@ function interfaceGraphhique(coords, stations, affect)
     allX = [c[1] for c in coords]
     allY = [c[2] for c in coords]
 
+    # Créer un nuage de points 
     p = scatter(allX, allY, 
         label="Villes", 
         color = :blue, 
@@ -258,6 +259,7 @@ function interfaceGraphhique(coords, stations, affect)
         xlabel = "X", ylabel = "Y"
     )
 
+    # Affecte chaque ville à sa station la plus proche en la reliant par un trait gris fin
     for i in 1:length(coords)
         indice = affect[i]
         xVille, yVille = coords[i]
@@ -357,7 +359,7 @@ function pMedian_metaHeuristiqueRandom(p,nbEssais=50)
     coords, = initCoordN()
     # println("Coordonnées (x, y) de chaque ville extraite du fichier 'att48.tsp', représentant 48 états des Etats Unis : \n$coords\n")
 
-    stations = meilleureSolution(p, coords, nbEssais)
+    stations, cout = iterationsStochastiqueRandom(p, coords, nbEssais)
     #println("Liste des ièmes Etats choisis aléatoirement pour avoir une station de metro/bus après $nbEssais essais d'améliorations : \n$stations\n")
     println("Définition des stations.")
 
@@ -366,7 +368,7 @@ function pMedian_metaHeuristiqueRandom(p,nbEssais=50)
     println("Affectation des autres Etats à la station la plus proche.")
 
     println("Calcul du coût de la solution...")
-    cout = coutPmedian(coords, stations)
+
     println("Cout de la solution (à minimiser) : $cout")
 
     interfaceGraphhique(coords, stations, affect)
