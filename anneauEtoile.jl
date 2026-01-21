@@ -309,14 +309,15 @@ end
 
 function defPMain(nbEtats)
     while true
-        print("Choisissez le nombres de stations que vous voulez placer parmis les $nbEtats Etats (un entier entre 1 et $nbEtats compris) : ")
+        println("Choisissez le nombres de stations que vous voulez placer parmis les $nbEtats Etats (un entier entre 1 et $nbEtats compris) : ")
+        print("Nb stations à placer : ")
         p = readline()
         if p == "q"
             print("\n")
             return "q"
         end
-        p = parse(Int, p)
-        if p <= nbEtats && p > 0
+        p = tryparse(Int, p)    # tryparse au lieu de parse permet de renvoyer nothing si p n'est pas un nombre
+        if !isnothing(p) && p <= nbEtats && p > 0
             print("\n")
             return p
         else
@@ -327,13 +328,14 @@ end
 
 function defNbEssaisMain()
     while true
+        print("\nNb Essais : ")
         nbEssais = readline()
         if nbEssais == "q"
             print("\n")
             return "q"
         end
-        nbEssais = parse(Int, nbEssais)
-        if nbEssais > 0 
+        nbEssais = tryparse(Int, nbEssais)
+        if !isnothing(nbEssais) && nbEssais > 0 
             print("\n")
             return nbEssais
         else
