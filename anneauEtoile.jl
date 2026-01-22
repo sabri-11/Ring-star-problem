@@ -5,20 +5,24 @@ function main()
     coords, = initCoordN()
     nbEtats = length(coords)
     temps = -1
+    open("historique.txt", "w") do f
+        write(f, "historique des tests réalisés : \n\n")
+    end
 
     texte(nbEtats)
     while true
         choixExec = choixVitesse()
         choixCycle = choixTsp()
         choixMethode = choixPMedian()
+        p = defNbStations(nbEtats)
         if choixExec == 1
-            executionProgramme(choixCycle, choixMethode)
+            cout = executionProgramme(p, choixCycle, choixMethode)
         elseif choixExec == 2
             while temps < 0
                 temps = testVitesse(choixCycle, choixMethode)
             end
         end
-        remplirHistorique(choixExec, choixCycle, choixMethode, temps)
+        remplirHistorique(choixExec, choixCycle, choixMethode, p, cout, temps)
     end
 end
 
@@ -37,7 +41,7 @@ function ae_ppv_glouton(p)
     ordreDeVisite = plusProcheVoisin(coords, stations)
     cout = coutPmedian(coords, stations) + coutTsp(coords, ordreDeVisite)
     interfaceGraphhiqueTsp(coords, stations, affect, ordreDeVisite, cout)
-
+    return cout
 end
 
 function ae_ppv_random(p, nbEssais=1)
@@ -49,6 +53,7 @@ function ae_ppv_random(p, nbEssais=1)
     ordreDeVisite = plusProcheVoisin(coords, stations)
     cout = coutPmedian(coords, stations) + coutTsp(coords, ordreDeVisite)
     interfaceGraphhiqueTsp(coords, stations, affect, ordreDeVisite, cout)
+    return cout
 end
 
 function ae_ppv_metaHeuristiqueGlouton(p)
@@ -61,6 +66,7 @@ function ae_ppv_metaHeuristiqueGlouton(p)
     ordreDeVisite = plusProcheVoisin(coords, stations)
     cout = cout_pMedian + coutTsp(coords, ordreDeVisite)
     interfaceGraphhiqueTsp(coords, stations, affect, ordreDeVisite, cout)
+    return cout
 end
 
 function ae_ppv_metaHeuristiqueRandom(p, nbEssais=50)
@@ -72,10 +78,12 @@ function ae_ppv_metaHeuristiqueRandom(p, nbEssais=50)
     ordreDeVisite = plusProcheVoisin(coords, stations)
     cout = cout_pMedian + coutTsp(coords, ordreDeVisite)
     interfaceGraphhiqueTsp(coords, stations, affect, ordreDeVisite, cout)
+    return cout
 end
 
 function ae_ppv_plne(p)
-    tspSurPlne(p)
+    cout = tspSurPlne(p)
+    return cout
 end
 
 #### plus proche voisin amélioré
@@ -89,6 +97,7 @@ function ae_2opt_glouton(p)
     # ordreDeVisite = plusProcheVoisin_2opt(coords, stations)
     cout = coutPmedian(coords, stations) + coutTsp(coords, ordreDeVisite)
     interfaceGraphhiqueTsp(coords, stations, affect, ordreDeVisite)
+    return cout
 
 end
 
@@ -185,9 +194,9 @@ function choixPMedian()
     print("\nVotre saisie : ")
     entree = readline()
     print("\n")
-    tryparse(Int, entree)
+    entree = tryparse(Int, entree)
 
-    while !isnothing(entree) entree != 1 && entree != 2 && entree != 3 && entree 4, && entree != 5
+    while !isnothing(entree) && entree != 1 && entree != 2 && entree != 3 && entree != 4 && entree != 5
         println("Mauvaise valeure entrée, réessayez.")
         print("\nVotre saisie : ")
         entree = readline()
@@ -199,124 +208,116 @@ function choixPMedian()
     
 end
 
-function executionProgramme(choixCycle, choixMethode)
+function executionProgramme(p, choixCycle, choixMethode)
     if choixMethode == 1
-        choix1(nbEtats, choixCycle)
-        return
+        cout = choix1(p, choixCycle)
+        return cout
 
         # Cas glouton amélioré
     elseif choixMethode == 2
-        choix2(nbEtats, choixCycle)
-        return
+        cout = choix2(p, choixCycle)
+        return cout
 
         # Cas Random
     elseif choixMethode == 3
-        choix3(nbEtats, choixCycle)
-        return
+        cout = choix3(p, choixCycle)
+        return cout
     
         # Cas Random amélioré
     elseif choixMethode == 4
-        choix4(nbEtats, choixCycle)
-        return
+        cout = choix4(p, choixCycle)
+        return cout
 
         # Cas PLNE Compacte
     elseif choixMethode == 5
-        choix5(nbEtats, choixCycle)
-        return
+        cout = choix5(p, choixCycle)
+        return cout
+    end
 end
 
-function choix1(nbEtats, choixCycle)
-    p = defPMain(nbEtats)
+function choix1(p, choixCycle)
+    
     if p == "q"
         return
     else
         if choixCycle == 1
-            ae_ppv_glouton(p)
+            cout = ae_ppv_glouton(p)
         elseif choixCycle == 2
-            ae_2opt_glouton(p)
+            cout = ae_2opt_glouton(p)
         elseif choixCycle == 3
-            ae_plne_glouton(p)
+            cout = ae_plne_glouton(p)
         end
+        return cout
     end
 
 end
 
-function choix2(nbEtats, choixCycle)
-    p = defPMain(nbEtats)
+function choix2(p, choixCycle)
     if p == "q"
         return
     else
         if choixCycle == 1
-            ae_ppv_metaHeuristiqueGlouton(p)
+            cout = ae_ppv_metaHeuristiqueGlouton(p)
         elseif choixCycle == 2
-            ae_2opt_metaHeuristiqueGlouton(p)
+            cout = ae_2opt_metaHeuristiqueGlouton(p)
         elseif choixCycle == 3
-            ae_plne_metaHeuristiqueGlouton(p)
+            cout = ae_plne_metaHeuristiqueGlouton(p)
         end
-        
-        return
+
+        return cout
     end
 
 end
 
-function choix3(nbEtats, choixCycle)
-    p = defPMain(nbEtats)
+function choix3(p, choixCycle)
     print("Choisissez le nombres d'essais alétatoires que vous voulez effectuer : ")
     nbEssais = defNbEssaisMain()
     if nbEssais == "q"
         return
     else
         if choixCycle == 1
-            ae_ppv_random(p)
+            cout = ae_ppv_random(p)
         elseif choixCycle == 2
-            ae_2opt_random(p)
+            cout = ae_2opt_random(p)
         elseif choixCycle == 3
-            ae_plne_random(p)
+            cout = ae_plne_random(p)
         end
-        return
+        return cout
     end
 end
 
-function choix4(nbEtats, choixCycle)
-
-    p = defPMain(nbEtats)
+function choix4(p, choixCycle)
     print("Choisissez le nombres d'itérations d'amélioration par descente stochastique sur une heuristique alétatoire que vous voulez effectuer (100 recommandées) : ")
     nbEssais = defNbEssaisMain()
     if nbEssais == "q"
         return
     else
         if choixCycle == 1
-            ae_ppv_metaHeuristiqueRandom(p, nbEssais)
+            cout = ae_ppv_metaHeuristiqueRandom(p, nbEssais)
         elseif choixCycle == 2
-            ae_2opt_metaHeuristiqueRandom(p, nbEssais)
+            cout = ae_2opt_metaHeuristiqueRandom(p, nbEssais)
         elseif choixCycle == 3
-            ae_plne_metaHeuristiqueRandom(p, nbEssais)
+            cout = ae_plne_metaHeuristiqueRandom(p, nbEssais)
         end   
-        return           
+        return cout
     end
 
 end
 
-function choix5(nbEtats, choixCycle)
-    p = defPMain(nbEtats)
-    if p == "q"
-        return
-    else
-        if choixCycle == 1
-            ae_ppv_plne(p)
-        elseif choixCycle == 2
-            ae_2opt_plne(p)
-        elseif choixCycle == 3
-            ae_plne_plne(p)
-        end   
-        return           
+function choix5(p, choixCycle)
+    if choixCycle == 1
+        cout = ae_ppv_plne(p)
+    elseif choixCycle == 2
+        cout = ae_2opt_plne(p)
+    elseif choixCycle == 3
+        cout = ae_plne_plne(p)
     end
-    return
+    return cout
 end
 
 
 
-function defPMain(nbEtats)
+function defNbStations(nbEtats)
     while true
         println("Choisissez le nombres de stations que vous voulez placer parmis les $nbEtats Etats (un entier entre 1 et $nbEtats compris) : ")
         print("Nb stations à placer : ")
@@ -354,7 +355,7 @@ function defNbEssaisMain()
 
 end
 
-function remplirHistorique(choixExec, choixCycle, choixMethode, temps)
+function remplirHistorique(choixExec, choixCycle, choixMethode, p, cout, temps)
     if choixMethode == 1
         methodePmedian = "heuristique gloutonne"
 
@@ -368,7 +369,7 @@ function remplirHistorique(choixExec, choixCycle, choixMethode, temps)
     
         # Cas Random amélioré
     elseif choixMethode == 4
-        methodePmedian = "méta heuristique random améliorée par descente sochastique"
+        methodePmedian = "méta heuristique random améliorée par descente stochastique"
                 
         # Cas PLNE Compacte
     elseif choixMethode == 5
@@ -384,19 +385,36 @@ function remplirHistorique(choixExec, choixCycle, choixMethode, temps)
     end
 
     if choixExec == 1
-
+        temps = -1
+        intro = "Test de solution : "
     elseif choixExec == 2
-        println("Vous testez la vitesse d'exécution sans affichage des resultats.")
+        intro = "Test de vitesse d'exécution : "
     end
 
 
     open("historique.txt", "a") do f
-        if choixExec == 1
+        println(intro)
+        println(f, intro)
 
-        
+        println("Nombre de stations à placer : $p")
+        println(f, "Nombre de stations à placer : $p")
 
-            println("Méthode choisie : $choixMethode")
+        println("Méthode p-Médian choisie : $methodePmedian")
+        println(f, "Méthode p-Médian choisie : $methodePmedian")
+
+        println("Méthode TSP choisie : $methodeCycle")
+        println(f, "Méthode TSP choisie : $methodeCycle")
+
+        if temps > 0
+            println("Temps d'exécution : $temps")
+            println(f, "Temps d'exécution : $temps")
+        else
+            println("Coût de la solution : $(round(cout, digits=2))")
+            println(f, "Coût de la solution : $(round(cout, digits=2))")
         end
+
+        println()
+        println(f)
     end
 end
 ###########################################################
@@ -408,7 +426,7 @@ function testVitesse(choixCycle, choixMethode, nbEtats)
     
     # Cas glouton
     if choixMethode == "1"
-        p = defPMain(nbEtats)
+        p = defNbStations(nbEtats)
         if choixCycle == 1
             t = @elapsed testVitesse_ppv_Glouton(p)
         elseif choixCycle == 2
@@ -421,7 +439,7 @@ function testVitesse(choixCycle, choixMethode, nbEtats)
 
         # Cas glouton amélioré
     elseif choixMethode == "2"
-        p = defPMain(nbEtats)
+        p = defNbStations(nbEtats)
         if choixCycle == 1
             t = @elapsed testVitesse_ae_ppv_metaHeuristiqueGlouton(p)
         elseif choixCycle == 2
@@ -434,7 +452,7 @@ function testVitesse(choixCycle, choixMethode, nbEtats)
 
         # Cas Random
     elseif choixMethode == "3"
-        p = defPMain(nbEtats)
+        p = defNbStations(nbEtats)
         print("Choisissez le nombres d'essais alétatoires que vous voulez effectuer : ")
         nbEssais = defNbEssaisMain()
         if nbEssais == "q"
@@ -454,7 +472,7 @@ function testVitesse(choixCycle, choixMethode, nbEtats)
     
         # Cas Random amélioré
     elseif choixMethode == "4"
-        p = defPMain(nbEtats)
+        p = defNbStations(nbEtats)
         print("Choisissez le nombres d'itérations d'amélioration par descente stochastique sur une heuristique alétatoire que vous voulez effectuer (100 recommandées) : ")
         nbEssais = defNbEssaisMain()
         if nbEssais == "q"
@@ -473,7 +491,7 @@ function testVitesse(choixCycle, choixMethode, nbEtats)
         end
         # Cas PLNE Compacte
     elseif choixMethode == "5"
-        p = defPMain(nbEtats)
+        p = defNbStations(nbEtats)
         if choixCycle == 1
             t = @elapsed testVitesse_ae_ppv_plne(p)
         elseif choixCycle == 2

@@ -110,7 +110,7 @@ function tspSurPlne(p)
         ordreDeVisite = plusProcheVoisin(coords, stations)
         cout = objective_value(m) + coutTsp(coords, ordreDeVisite)
         interfaceGraphhiqueTsp(coords, stations, affect, ordreDeVisite, cout)
-
+        return cout
     end
 
     
