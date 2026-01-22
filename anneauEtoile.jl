@@ -4,16 +4,21 @@ include("tsp.jl")
 function main()
     coords, = initCoordN()
     nbEtats = length(coords)
+    temps = -1
 
     texte(nbEtats)
     while true
         choixExec = choixVitesse()
-        if choixExec == 2
-            testVitesse(nbEtats)
-        else 
-            choixCycle = choixTsp()
-            choixMethode = choixPMedian(choixExec, choixCycle, nbEtats)
+        choixCycle = choixTsp()
+        choixMethode = choixPMedian()
+        if choixExec == 1
+            executionProgramme(choixCycle, choixMethode)
+        elseif choixExec == 2
+            while temps < 0
+                temps = testVitesse(choixCycle, choixMethode)
+            end
         end
+        remplirHistorique(choixExec, choixCycle, choixMethode, temps)
     end
 end
 
@@ -169,51 +174,55 @@ function choixVitesse()
     return entree
 end
 
-function choixPMedian(choixExec, choixCycle, nbEtats)
+function choixPMedian()
 
     println("\nChoisissez la méthode que vous souhaitez utiliser, entrez : \n
     1 pour utiliser l'heuristique gloutonne
     2 pour utiliser l'heuristique gloutonne améliorée
     3 pour utiliser l'heuristique aléatoire
     4 pour utiliser l'heuristique aléatoire amélioréé
-    5 pour utiliser la résolution par programme linéaire.
-    q pour quitter")
+    5 pour utiliser la résolution par programme linéaire.")
     print("\nVotre saisie : ")
     entree = readline()
     print("\n")
+    tryparse(Int, entree)
 
-        # Cas glouton
-    if entree == "1"
+    while !isnothing(entree) entree != 1 && entree != 2 && entree != 3 && entree 4, && entree != 5
+        println("Mauvaise valeure entrée, réessayez.")
+        print("\nVotre saisie : ")
+        entree = readline()
+        print("\n")
+        tryparse(Int, entree)
+    end
+
+    return entree
+    
+end
+
+function executionProgramme(choixCycle, choixMethode)
+    if choixMethode == 1
         choix1(nbEtats, choixCycle)
         return
 
         # Cas glouton amélioré
-    elseif entree == "2"
+    elseif choixMethode == 2
         choix2(nbEtats, choixCycle)
         return
 
         # Cas Random
-    elseif entree == "3"
+    elseif choixMethode == 3
         choix3(nbEtats, choixCycle)
         return
     
         # Cas Random amélioré
-    elseif entree == "4"
+    elseif choixMethode == 4
         choix4(nbEtats, choixCycle)
         return
 
         # Cas PLNE Compacte
-    elseif entree == "5"
+    elseif choixMethode == 5
         choix5(nbEtats, choixCycle)
         return
-
-        # Cas d'arrêt
-    elseif entree == "q"
-        return
-    else
-        println("Mauvaise valeure entrée, réessayez ou entrez q pour quitter.")
-    end
-    
 end
 
 function choix1(nbEtats, choixCycle)
@@ -344,114 +353,140 @@ function defNbEssaisMain()
     end
 
 end
+
+function remplirHistorique(choixExec, choixCycle, choixMethode, temps)
+    if choixMethode == 1
+        methodePmedian = "heuristique gloutonne"
+
+        # Cas glouton amélioré
+    elseif choixMethode == 2
+        methodePmedian = "méta heuristique gloutonne"
+
+        # Cas Random
+    elseif choixMethode == 3
+        methodePmedian = "heuristique random répétée un certain nombre de fois"
+    
+        # Cas Random amélioré
+    elseif choixMethode == 4
+        methodePmedian = "méta heuristique random améliorée par descente sochastique"
+                
+        # Cas PLNE Compacte
+    elseif choixMethode == 5
+        methodePmedian = "programme linéaire"
+    end
+
+    if choixCycle == 1
+        methodeCycle = "plus proche voisin"
+    elseif choixCycle == 2
+        methodeCycle = "plus proche voisin améliorée"
+    elseif choixCycle == 3
+        methodeCycle = "programme linéaire"
+    end
+
+    if choixExec == 1
+
+    elseif choixExec == 2
+        println("Vous testez la vitesse d'exécution sans affichage des resultats.")
+    end
+
+
+    open("historique.txt", "a") do f
+        if choixExec == 1
+
+        
+
+            println("Méthode choisie : $choixMethode")
+        end
+    end
+end
 ###########################################################
 
 
 ########################### Fonctions tests de vitesse de résolution ############################
 
-function testVitesse(nbEtats)
+function testVitesse(choixCycle, choixMethode, nbEtats)
     
-    while true
-        choixCycle = choixTsp()
-        println("\nChoisissez la méthode dont vous voulez tester la vitesse d'exécution, entrez : \n
-        1 pour utiliser l'heuristique gloutonne
-        2 pour utiliser l'heuristique gloutonne améliorée
-        3 pour utiliser l'heuristique aléatoire
-        4 pour utiliser l'heuristique aléatoire amélioréé
-        5 pour utiliser la résolution par programme linéaire.
-        r pour revenir au menu précédent
-        q pour quitter")
-        print("\nVotre saisie : ")
-        entree = readline()
-        print("\n")
-
-        # Cas glouton
-        if entree == "1"
-            p = defPMain(nbEtats)
-            if choixCycle == 1
-                t = @elapsed testVitesse_ppv_Glouton(p)
-            elseif choixCycle == 2
-                t = @elapsed testVitesse_ae_2opt_glouton(p)
-            elseif choixCycle == 3
-                t = @elapsed testVitesse_ae_plne_glouton(p)
-            end
-            println("L'exécution a pris $t secondes\n") 
-            
-
-         # Cas glouton amélioré
-        elseif entree == "2"
-            p = defPMain(nbEtats)
-            if choixCycle == 1
-                t = @elapsed testVitesse_ae_ppv_metaHeuristiqueGlouton(p)
-            elseif choixCycle == 2
-                t = @elapsed testVitesse_ae_2opt_metaHeuristiqueGlouton(p)
-            elseif choixCycle == 3
-                t = @elapsed testVitesse_ae_plne_metaHeuristiqueGlouton(p)
-            end
-            println("L'exécution a pris $t secondes\n") 
-            
-
-         # Cas Random
-        elseif entree == "3"
-            p = defPMain(nbEtats)
-            print("Choisissez le nombres d'essais alétatoires que vous voulez effectuer : ")
-            nbEssais = defNbEssaisMain()
-            if nbEssais == "q"
-                return
-            else
-                if choixCycle == 1
-                    t = @elapsed testVitesse_ae_ppv_random(p, nbEssais)
-                elseif choixCycle == 2
-                    t = @elapsed testVitesse_ae_2opt_random(p, nbEssais)
-                elseif choixCycle == 3
-                    t = @elapsed testVitesse_ae_plne_random(p, nbEssais)
-                end
-                println("L'exécution a pris $t secondes\n") 
-                    
-            end
-        
-         # Cas Random amélioré
-        elseif entree == "4"
-            p = defPMain(nbEtats)
-            print("Choisissez le nombres d'itérations d'amélioration par descente stochastique sur une heuristique alétatoire que vous voulez effectuer (100 recommandées) : ")
-            nbEssais = defNbEssaisMain()
-            if nbEssais == "q"
-                return
-            else
-                if choixCycle == 1
-                    t = @elapsed testVitesse_ae_ppv_metaHeuristiqueRandom(p, nbEssais)
-                elseif choixCycle == 2
-                    t = @elapsed testVitesse_ae_2opt_metaHeuristiqueRandom(p, nbEssais)
-                elseif choixCycle == 3
-                    t = @elapsed testVitesse_ae_plne_metaHeuristiqueRandom(p, nbEssais)
-                end
-                println("L'exécution a pris $t secondes\n") 
-                  
-            end
-         # Cas PLNE Compacte
-        elseif entree == "5"
-            p = defPMain(nbEtats)
-            if choixCycle == 1
-                t = @elapsed testVitesse_ae_ppv_plne(p)
-            elseif choixCycle == 2
-                t = @elapsed testVitesse_ae_2opt_plne(p)
-            elseif choixCycle == 3
-                t = @elapsed testVitesse_ae_plne_plne(p)
-            end
-            println("L'exécution a pris $t secondes\n") 
-
-         # Cas de retour au menu précédent
-        elseif entree == "r"
-            main()
-            return  # Si on fait q dans le menu précédent, on va revenir ici et on return
-
-         # Cas d'arrêt
-        elseif entree == "q"
-            break
-        else
-            print("Mauvaise valeure entrée, réessayez ou entrez q pour quitter.")
-            continue
+    # Cas glouton
+    if choixMethode == "1"
+        p = defPMain(nbEtats)
+        if choixCycle == 1
+            t = @elapsed testVitesse_ppv_Glouton(p)
+        elseif choixCycle == 2
+            t = @elapsed testVitesse_ae_2opt_glouton(p)
+        elseif choixCycle == 3
+            t = @elapsed testVitesse_ae_plne_glouton(p)
         end
+        println("L'exécution a pris $t secondes\n") 
+        return t
+
+        # Cas glouton amélioré
+    elseif choixMethode == "2"
+        p = defPMain(nbEtats)
+        if choixCycle == 1
+            t = @elapsed testVitesse_ae_ppv_metaHeuristiqueGlouton(p)
+        elseif choixCycle == 2
+            t = @elapsed testVitesse_ae_2opt_metaHeuristiqueGlouton(p)
+        elseif choixCycle == 3
+            t = @elapsed testVitesse_ae_plne_metaHeuristiqueGlouton(p)
+        end
+        println("L'exécution a pris $t secondes\n") 
+        return t
+
+        # Cas Random
+    elseif choixMethode == "3"
+        p = defPMain(nbEtats)
+        print("Choisissez le nombres d'essais alétatoires que vous voulez effectuer : ")
+        nbEssais = defNbEssaisMain()
+        if nbEssais == "q"
+            return
+        else
+            if choixCycle == 1
+                t = @elapsed testVitesse_ae_ppv_random(p, nbEssais)
+            elseif choixCycle == 2
+                t = @elapsed testVitesse_ae_2opt_random(p, nbEssais)
+            elseif choixCycle == 3
+                t = @elapsed testVitesse_ae_plne_random(p, nbEssais)
+            end
+            println("L'exécution a pris $t secondes\n")
+            return t
+                
+        end
+    
+        # Cas Random amélioré
+    elseif choixMethode == "4"
+        p = defPMain(nbEtats)
+        print("Choisissez le nombres d'itérations d'amélioration par descente stochastique sur une heuristique alétatoire que vous voulez effectuer (100 recommandées) : ")
+        nbEssais = defNbEssaisMain()
+        if nbEssais == "q"
+            return
+        else
+            if choixCycle == 1
+                t = @elapsed testVitesse_ae_ppv_metaHeuristiqueRandom(p, nbEssais)
+            elseif choixCycle == 2
+                t = @elapsed testVitesse_ae_2opt_metaHeuristiqueRandom(p, nbEssais)
+            elseif choixCycle == 3
+                t = @elapsed testVitesse_ae_plne_metaHeuristiqueRandom(p, nbEssais)
+            end
+            println("L'exécution a pris $t secondes\n")
+            return t
+                
+        end
+        # Cas PLNE Compacte
+    elseif choixMethode == "5"
+        p = defPMain(nbEtats)
+        if choixCycle == 1
+            t = @elapsed testVitesse_ae_ppv_plne(p)
+        elseif choixCycle == 2
+            t = @elapsed testVitesse_ae_2opt_plne(p)
+        elseif choixCycle == 3
+            t = @elapsed testVitesse_ae_plne_plne(p)
+        end
+        println("L'exécution a pris $t secondes\n")
+        return t
+
+    else
+        print("Mauvaise valeure entrée, réessayez.")
+        return -1
     end
 
 end
