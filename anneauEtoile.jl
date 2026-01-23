@@ -16,7 +16,6 @@ function main()
         p = defNbStations(nbEtats)
         
         stations, affect, ordreDeVisite, cout, temps = executionProgramme(p, choixCycle, choixMethode)
-        temps = round(temps, digits="3")
         remplirHistorique(choixCycle, choixMethode, p, cout, temps)
         interfaceGraphhiqueTsp(coords, stations, affect, ordreDeVisite, cout)
     end

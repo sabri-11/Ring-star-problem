@@ -1,2 +1,30 @@
 historique des tests réalisés : 
 
+Test de solution : 
+Nombre de stations à placer : 10
+Méthode p-Médian choisie : heuristique gloutonne
+Méthode TSP choisie : plus proche voisin
+Coût de la solution : 48833.89
+Temps d'exécution : 0.000204188
+
+Test de solution : 
+Nombre de stations à placer : 8
+Méthode p-Médian choisie : méta heuristique gloutonne
+Méthode TSP choisie : plus proche voisin améliorée
+Coût de la solution : 49969.12
+Temps d'exécution : 0.00097491
+
+Test de solution : 
+Nombre de stations à placer : 14
+Méthode p-Médian choisie : heuristique gloutonne
+Méthode TSP choisie : plus proche voisin améliorée
+Coût de la solution : 42947.41
+Temps d'exécution : 0.000247025
+
+Test de solution : 
+Nombre de stations à placer : 14
+Méthode p-Médian choisie : heuristique gloutonne
+Méthode TSP choisie : plus proche voisin
+Coût de la solution : 49210.49
+Temps d'exécution : 0.000209952
+

@@ -235,3 +235,96 @@ end
 function testVitesse_ae_plne_plne(p)
 
 end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+########################################## Test de rapidité des différentes méthodes pures ###################################
+
+function testVitesse_glouton(p)
+    coords, minX, maxX, minY, maxY = initCoordN()
+    stations = defStationsGlouton(p, coords, minX, maxX, minY, maxY)
+    affect = affecterMedians(coords, stations)
+    cout = coutPmedian(coords, stations)
+end
+
+
+function testVitesse_metaHeuristiqueGlouton(p)
+    # On appelle pas la fonction coutPmedian avec coutAvant car elle n'est pas nécéssaire pour la méta heuristique glouton,
+    # on l'utilisait juste pour avoir un comparatif. On teste ici juste la vitesse d'exécution des fonctions purement nécéssaires.
+
+    coords, minX, maxX, minY, maxY = initCoordN()
+    stations = defStationsGlouton(p, coords, minX, maxX, minY, maxY)
+    stations, coutApres = applicationStochastique(p, coords, stations)
+    affect = affecterMedians(coords, stations)
+end
+
+
+function testVitesse_random(p, nbEssais)
+    coords, = initCoordN()
+    stations = meilleureSolution(p, coords, nbEssais)
+    affect = affecterMedians(coords, stations)
+    cout = coutPmedian(coords, stations)
+end
+
+
+function testVitesse_metaHeuristiqueRandom(p, nbEssais)
+    coords, = initCoordN()
+    stations = meilleureSolution(p, coords, nbEssais)
+    affect = affecterMedians(coords, stations)
+    cout = coutPmedian(coords, stations)
+end
+
+
+function testVitesse_plneCompacte(p)
+    coords, = initCoordN()
+    nbEtats = length(coords)
+    d = initMatriceDistance(coords, nbEtats)
+    
+    m = Model(GLPK.Optimizer)
+    @variable(m, y[1:nbEtats, 1:nbEtats], Bin)
+
+    @objective(m, Min, sum(d[i, j]*y[i, j] for i in 1:nbEtats,j in 1:nbEtats))
+    
+    @constraint(m, sum(y[i, i] for i in 1:nbEtats) == p)
+    @constraint(m, [i=1:nbEtats] ,sum(y[i, j] for j in 1:nbEtats) == 1)
+    @constraint(m, [i=1:nbEtats, j=1:nbEtats] , y[i, j] <= y[j, j])
+    @constraint(m, y[1, 1] == 1)    # On force le point 1 à être une station
+    optimize!(m)
+
+    status = termination_status(m)
+
+    if status == INFEASIBLE
+        return      # pas de println qui ralentissent la fonction 
+    elseif status == UNBOUNDED
+        return      # pas de println qui ralentissent la fonction 
+    elseif status == OPTIMAL
+        stations = Int[]
+        affect = Vector{Int}(undef, nbEtats)
+
+        for i in 1:nbEtats
+            if value(y[i, i]) > 0.9
+                push!(stations, i)
+            end
+        end
+        for i in 1:nbEtats
+            for j in 1:nbEtats
+                if value(y[i, j]) > 0.9
+                    affect[i] = j
+                end
+            end
+        end
+
+        cout = objective_value(m)
+    end
+end
