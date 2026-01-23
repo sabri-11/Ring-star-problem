@@ -1,8 +1,2 @@
 historique des tests réalisés : 
 
-Test de solution : 
-Nombre de stations à placer : 10
-Méthode p-Médian choisie : méta heuristique random améliorée par descente sochastique
-Méthode TSP choisie : plus proche voisin
-Coût de la solution : 46193.13
-

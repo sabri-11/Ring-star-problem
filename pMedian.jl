@@ -9,243 +9,10 @@ const OPTIMAL = JuMP.MOI.OPTIMAL
 const INFEASIBLE = JuMP.MOI.INFEASIBLE
 const UNBOUNDED = JuMP.MOI.DUAL_INFEASIBLE;
 
-##################################################   Main   #########################################################
 
-function main()
-    coords, = initCoordN()
-    nbEtats = length(coords)
 
-    print("\n")
-    println("Nous nous intéressons à la résolution du problème de l'anneau étoile avec une instance de $nbEtats Etats des Etats Unis. Nous voulons construire des arrêts de métro/bus dans p Etats de manière 
-à minimiser les distances à parcourir à pieds pour les citoyens puis tracer un cycle reliant toute les stations et de distance minimale. Ce sera à vous de choisir le nombre p de stations à construire sachant qu'il ne peut y avoir qu'un maximum de 1 station par Etat\n")
-    println("Nous avons donc implémenté plusieurs manières, plus ou moins bonnes pour résoudre ce problème. Pour ce qui est de la définition des stations, nous avons une méthode Gloutonne, une méthode aléatoire ainsi
-qu'une résolution avec un programme linéaire donnant nécessairement la meilleure solution. Nous avons également deux méta-heuristiques améliorant les solutions aléatoires et
-gloutonnes en les répétant un certains nombres de fois et ne gardant que la meilleure solution.")
-    println("Pour ce qui est du tracé du cycle reliant toutes les stations entre elles, nous avons 2 méthodes : \n-La méthode du plus proche voisin, qui part de la première station et construit un cycle de 
-station proche en proche.\n-Une amélioration de ce même algorithme par une méthode itérative, empêchant les croisements d'arrêtes.")
 
-    while true
-        println("\nChoisissez la méthode que vous souhaitez utiliser, entrez : \n
-        1 pour utiliser l'heuristique gloutonne
-        2 pour utiliser l'heuristique gloutonne améliorée
-        3 pour utiliser l'heuristique aléatoire
-        4 pour utiliser l'heuristique aléatoire amélioréé
-        5 pour utiliser la résolution par programme linéaire.
-        6 pour tester les temps d'exécution pures et sans affichage des différentes méthodes
-        q pour quitter")
-        print("\nVotre saisie : ")
-        entree = readline()
-        print("\n")
-
-         # Cas glouton
-        if entree == "1"
-            choix1(nbEtats)
-            break
-
-         # Cas glouton amélioré
-        elseif entree == "2"
-            choix2(nbEtats)
-            break
-
-         # Cas Random
-        elseif entree == "3"
-            choix3(nbEtats)
-            break
-        
-         # Cas Random amélioré
-        elseif entree == "4"
-            choix4(nbEtats)
-            break
-
-         # Cas PLNE Compacte
-        elseif entree == "5"
-            choix5(nbEtats)
-            break
-        
-         # Test des vitesses d'exécution 
-        elseif entree == "6"
-            choix6(nbEtats)
-            break
-
-         # Cas d'arrêt
-        elseif entree == "q"
-            break
-        else
-            println("Mauvaise valeure entrée, réessayez ou entrez q pour quitter.")
-            continue
-        end
-    end
-
-end
-
-######################################## Fonctions pour le main ################################################
-function choix1(nbEtats)
-    p = defPMain(nbEtats)
-    if p == "q"
-        return
-    else
-        pMedian_heuristiqueGloutonne(p)
-        return
-    end
-
-end
-
-function choix2(nbEtats)
-    p = defPMain(nbEtats)
-    if p == "q"
-        return
-    else
-        pMedian_metaHeuristiqueGlouton(p)
-        return
-    end
-
-end
-
-function choix3(nbEtats)
-    p = defPMain(nbEtats)
-    print("Choisissez le nombres d'essais alétatoires que vous voulez effectuer : ")
-    nbEssais = defNbEssaisMain()
-    if nbEssais == "q"
-        return
-    else
-        pMedian_heuristiqueRandomisee(p, nbEssais)
-        return
-    end
-end
-
-function choix4(nbEtats)
-
-    p = defPMain(nbEtats)
-    print("Choisissez le nombres d'itérations d'amélioration par descente stochastique sur une heuristique alétatoire que vous voulez effectuer (100 recommandées) : ")
-    nbEssais = defNbEssaisMain()
-    if nbEssais == "q"
-        return
-    else
-        pMedian_metaHeuristiqueRandom(p ,nbEssais)     
-        return           
-    end
-
-end
-
-function choix5(nbEtats)
-    p = defPMain(nbEtats)
-    pMedian_plneCompacte(p)
-    return
-end
-
-function choix6(nbEtats)
-    
-    while true
-        println("\nChoisissez la méthode dont vous voulez tester la vitesse d'exécution, entrez : \n
-        1 pour utiliser l'heuristique gloutonne
-        2 pour utiliser l'heuristique gloutonne améliorée
-        3 pour utiliser l'heuristique aléatoire
-        4 pour utiliser l'heuristique aléatoire amélioréé
-        5 pour utiliser la résolution par programme linéaire.
-        r pour revenir au menu précédent
-        q pour quitter")
-        print("\nVotre saisie : ")
-        entree = readline()
-        print("\n")
-
-        # Cas glouton
-        if entree == "1"
-            p = defPMain(nbEtats)
-            t = @elapsed testVitesse_glouton(p)
-            println("L'exécution a pris $t secondes") 
-            
-
-         # Cas glouton amélioré
-        elseif entree == "2"
-            p = defPMain(nbEtats)
-            t = @elapsed testVitesse_metaHeuristiqueGlouton(p)
-            println("L'exécution a pris $t secondes") 
-            
-
-         # Cas Random
-        elseif entree == "3"
-            p = defPMain(nbEtats)
-            print("Choisissez le nombres d'essais alétatoires que vous voulez effectuer : ")
-            nbEssais = defNbEssaisMain()
-            if nbEssais == "q"
-                return
-            else
-                t = @elapsed testVitesse_random(p, nbEssais)
-                println("L'exécution a pris $t secondes")
-                  
-            end
-        
-         # Cas Random amélioré
-        elseif entree == "4"
-            p = defPMain(nbEtats)
-            print("Choisissez le nombres d'itérations d'amélioration par descente stochastique sur une heuristique alétatoire que vous voulez effectuer (100 recommandées) : ")
-            nbEssais = defNbEssaisMain()
-            if nbEssais == "q"
-                return
-            else
-                t = @elapsed testVitesse_metaHeuristiqueRandom(p, nbEssais)
-                println("L'exécution a pris $t secondes")
-                  
-            end
-         # Cas PLNE Compacte
-        elseif entree == "5"
-            p = defPMain(nbEtats)
-            t = @elapsed testVitesse_plneCompacte(p)
-            println("L'exécution a pris $t secondes") 
-
-         # Cas de retour au menu précédent
-        elseif entree == "r"
-            main()
-            return  # Si on fait q dans le menu précédent, on va revenir ici et on return
-
-         # Cas d'arrêt
-        elseif entree == "q"
-            break
-        else
-            print("Mauvaise valeure entrée, réessayez ou entrez q pour quitter.")
-            continue
-        end
-    end
-
-end
-
-function defPMain(nbEtats)
-    while true
-        print("Choisissez le nombres de stations que vous voulez placer parmis les $nbEtats Etats (un entier entre 1 et $nbEtats compris) : ")
-        p = readline()
-        if p == "q"
-            print("\n")
-            return "q"
-        end
-        p = parse(Int, p)
-        if p <= nbEtats && p > 0
-            print("\n")
-            return p
-        else
-            println("\nMauvaise valeure entrée, réessayez ou entrez q pour quitter.")
-        end
-    end
-end
-
-function defNbEssaisMain()
-    while true
-        nbEssais = readline()
-        if nbEssais == "q"
-            print("\n")
-            return "q"
-        end
-        nbEssais = parse(Int, nbEssais)
-        if nbEssais > 0 
-            print("\n")
-            return nbEssais
-        else
-            println("\nMauvaise valeure entrée, réessayez ou entrez q pour quitter.")
-        end
-    end
-
-end
-
-function interfaceGraphhique(coords, stations, affect)
+function interfaceGraphhiquePmedian(coords, stations, affect)
     allX = [c[1] for c in coords]
     allY = [c[2] for c in coords]
 
@@ -304,7 +71,7 @@ function pMedian_heuristiqueGloutonne(p)
     cout = coutPmedian(coords, stations)
     println("Coût de la solution (à minimiser) : $cout")
 
-    interfaceGraphhique(coords, stations, affect)
+    interfaceGraphhiquePmedian(coords, stations, affect)
 end
 
 function pMedian_metaHeuristiqueGlouton(p)
@@ -327,7 +94,7 @@ function pMedian_metaHeuristiqueGlouton(p)
 
     println("Cout de la solution (à minimiser) avant et après descente stochastique :\nCout avant, heuristique Gloutonne : $coutAvant\nCout après, heuristique Gloutonne améliorée : $coutApres")
 
-    interfaceGraphhique(coords, stations, affect)
+    interfaceGraphhiquePmedian(coords, stations, affect)
 end
 
 
@@ -349,7 +116,7 @@ function pMedian_heuristiqueRandomisee(p, nbEssais=1)
     cout = coutPmedian(coords, stations)
     println("Cout de la solution (à minimiser) : $cout")
 
-    interfaceGraphhique(coords, stations, affect)
+    interfaceGraphhiquePmedian(coords, stations, affect)
 
 end
 
@@ -371,7 +138,7 @@ function pMedian_metaHeuristiqueRandom(p,nbEssais=50)
 
     println("Cout de la solution (à minimiser) : $cout")
 
-    interfaceGraphhique(coords, stations, affect)
+    interfaceGraphhiquePmedian(coords, stations, affect)
 
 end
 
@@ -391,10 +158,8 @@ function pMedian_plneCompacte(p)
     @constraint(m, [i=1:nbEtats, j=1:nbEtats] , y[i, j] <= y[j, j])
     @constraint(m, y[1, 1] == 1)    # On force le point 1 à être une station
 
-    println("Résolution par le solveur linéaire")
     optimize!(m)
-    
-    println("Affichage des résultats : \n")
+
     status = termination_status(m)
 
     if status == INFEASIBLE
@@ -423,12 +188,15 @@ function pMedian_plneCompacte(p)
 
         # println("Affectation des autres Etats à la station la plus proche. Affect[i] = j signifie que l'Etat i est affecté à la station de l'Etat j : \n$affect\n")
 
-        println("Calcul du coût de la solution...")
+        # println("Calcul du coût de la solution...")
         cout = objective_value(m)
-        println("Cout de la solution (à minimiser) : $cout")
+        # println("Cout de la solution (à minimiser) : $cout")
+
+        # interfaceGraphhiquePmedian(coords, stations, affect)
+        return coords, stations, affect, cout
     end
 
-    interfaceGraphhique(coords, stations, affect)
+    
     
 end
 
@@ -565,6 +333,8 @@ end
 # L'ennoncé impose enfait une méthode qui est de regrouper par paires de stations les plus proches et on en supprime une des 2
 # Cette fonction n'est donc pas optimale
 
+# On trie les stations en définissant une distance minimale entre stations acceptée qui va être augmentée peu à peu pour
+# supprimer les stations trop proches
 function trierStations(stations, coords, p)
     nbStations = length(stations)
     # On définit pour l'instant arbitrairement que 2 stations ne doivent pas être à 200m d'écart 
@@ -589,7 +359,7 @@ function trierStations(stations, coords, p)
 end
  =#
 
-
+# On regroupe par paires de stations les plus proches et on en supprime une des 2
 function trierStations(stations, coords, p)
 
     while length(stations) > p
@@ -618,7 +388,7 @@ function trierStations(stations, coords, p)
     return stations
 end
 
-# Si il n'y a pas assez de stations, on comble par ordre croissant avec les premiers Etats qui ne sont pas des stations
+# Si il n'y a pas assez de stations, on comble par ordre croissant avec les premiers Etats qui ne sont pas des stations (pas fou, choix aléatoire)
 function comblerStations(stations, nbEtats, p)
     
     for i in 1:nbEtats
@@ -691,7 +461,7 @@ function swapStation(stations, nbEtats)
 end
 
 # Améliore une solution de stations en échangeant un Etat qui n'est pas une station avec un Etat qui en est une et voit si cela améliore notre solution
-# Permet d'obtenir une solution optimale locale pour une solution de stations 
+# Permet d'obtenir une solution optimale locale pour un ensemble de stations données
 function applicationStochastique(p, coords, stations)
 
     if length(stations) <= 1

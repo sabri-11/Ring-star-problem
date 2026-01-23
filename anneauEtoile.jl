@@ -11,18 +11,14 @@ function main()
 
     texte(nbEtats)
     while true
-        choixExec = choixVitesse()
         choixCycle = choixTsp()
         choixMethode = choixPMedian()
         p = defNbStations(nbEtats)
-        if choixExec == 1
-            cout = executionProgramme(p, choixCycle, choixMethode)
-        elseif choixExec == 2
-            while temps < 0
-                temps = testVitesse(choixCycle, choixMethode)
-            end
-        end
-        remplirHistorique(choixExec, choixCycle, choixMethode, p, cout, temps)
+        
+        stations, affect, ordreDeVisite, cout, temps = executionProgramme(p, choixCycle, choixMethode)
+        temps = round(temps, digits="3")
+        remplirHistorique(choixCycle, choixMethode, p, cout, temps)
+        interfaceGraphhiqueTsp(coords, stations, affect, ordreDeVisite, cout)
     end
 end
 
@@ -40,8 +36,8 @@ function ae_ppv_glouton(p)
     affect = affecterMedians(coords, stations)
     ordreDeVisite = plusProcheVoisin(coords, stations)
     cout = coutPmedian(coords, stations) + coutTsp(coords, ordreDeVisite)
-    interfaceGraphhiqueTsp(coords, stations, affect, ordreDeVisite, cout)
-    return cout
+    
+    return stations, affect, ordreDeVisite, cout
 end
 
 function ae_ppv_random(p, nbEssais=1)
@@ -52,8 +48,8 @@ function ae_ppv_random(p, nbEssais=1)
     affect = affecterMedians(coords, stations)
     ordreDeVisite = plusProcheVoisin(coords, stations)
     cout = coutPmedian(coords, stations) + coutTsp(coords, ordreDeVisite)
-    interfaceGraphhiqueTsp(coords, stations, affect, ordreDeVisite, cout)
-    return cout
+
+    return stations, affect, ordreDeVisite, cout
 end
 
 function ae_ppv_metaHeuristiqueGlouton(p)
@@ -65,8 +61,8 @@ function ae_ppv_metaHeuristiqueGlouton(p)
     affect = affecterMedians(coords, stations)
     ordreDeVisite = plusProcheVoisin(coords, stations)
     cout = cout_pMedian + coutTsp(coords, ordreDeVisite)
-    interfaceGraphhiqueTsp(coords, stations, affect, ordreDeVisite, cout)
-    return cout
+
+    return stations, affect, ordreDeVisite, cout
 end
 
 function ae_ppv_metaHeuristiqueRandom(p, nbEssais=50)
@@ -77,44 +73,70 @@ function ae_ppv_metaHeuristiqueRandom(p, nbEssais=50)
     affect = affecterMedians(coords, stations)
     ordreDeVisite = plusProcheVoisin(coords, stations)
     cout = cout_pMedian + coutTsp(coords, ordreDeVisite)
-    interfaceGraphhiqueTsp(coords, stations, affect, ordreDeVisite, cout)
-    return cout
+
+    return stations, affect, ordreDeVisite, cout
 end
 
 function ae_ppv_plne(p)
-    cout = tspSurPlne(p)
-    return cout
+    coords, stations, affect, cout_pMedian = pMedian_plneCompacte(p)
+    ordreDeVisite = plusProcheVoisin(coords, stations)
+    cout = cout_pMedian + coutTsp(coords, ordreDeVisite)
+
+    return stations, affect, ordreDeVisite, cout
 end
 
 #### plus proche voisin amélioré
-function ae_2opt_glouton(p)
-
+function ae_ppv2opt_glouton(p)
     coords, minX, maxX, minY, maxY = initCoordN()
 
     stations = defStationsGlouton(p, coords, minX, maxX, minY, maxY)
 
     affect = affecterMedians(coords, stations)
-    # ordreDeVisite = plusProcheVoisin_2opt(coords, stations)
+    ordreDeVisite = plusProcheVoisin_2opt(coords, stations)
     cout = coutPmedian(coords, stations) + coutTsp(coords, ordreDeVisite)
-    interfaceGraphhiqueTsp(coords, stations, affect, ordreDeVisite)
-    return cout
 
+    return stations, affect, ordreDeVisite, cout
 end
 
-function ae_2opt_random(p, nbEssais=1)
+function ae_ppv2opt_random(p, nbEssais=1)
+    coords, = initCoordN()
 
+    stations = meilleureSolution(p, coords, nbEssais)
+
+    affect = affecterMedians(coords, stations)
+    ordreDeVisite = plusProcheVoisin_2opt(coords, stations)
+    cout = coutPmedian(coords, stations) + coutTsp(coords, ordreDeVisite)
+    return stations, affect, ordreDeVisite, cout
 end
 
-function ae_2opt_metaHeuristiqueGlouton(p)
+function ae_ppv2opt_metaHeuristiqueGlouton(p)
+    coords, minX, maxX, minY, maxY = initCoordN()
 
+    stations = defStationsGlouton(p, coords, minX, maxX, minY, maxY)
+    stations, cout_pMedian = applicationStochastique(p, coords, stations)
+
+    affect = affecterMedians(coords, stations)
+    ordreDeVisite = plusProcheVoisin_2opt(coords, stations)
+    cout = cout_pMedian + coutTsp(coords, ordreDeVisite)
+    return stations, affect, ordreDeVisite, cout
 end
 
-function ae_2opt_metaHeuristiqueRandom(p, nbEssais=50)
+function ae_ppv2opt_metaHeuristiqueRandom(p, nbEssais=50)
+    coords, = initCoordN()
 
+    stations, cout_pMedian = iterationsStochastiqueRandom(p, coords, nbEssais)
+
+    affect = affecterMedians(coords, stations)
+    ordreDeVisite = plusProcheVoisin_2opt(coords, stations)
+    cout = cout_pMedian + coutTsp(coords, ordreDeVisite)
+    return stations, affect, ordreDeVisite, cout
 end
 
-function ae_2opt_plne(p)
-
+function ae_ppv2opt_plne(p)
+    coords, stations, affect, cout_pMedian = pMedian_plneCompacte(p)
+    ordreDeVisite = plusProcheVoisin_2opt(coords, stations)
+    cout = cout_pMedian + coutTsp(coords, ordreDeVisite)
+    return stations, affect, ordreDeVisite, cout
 end
 
 #### plne compacte
@@ -127,7 +149,7 @@ function ae_plne_glouton(p)
     affect = affecterMedians(coords, stations)
     # ordreDeVisite = plusProcheVoisin_2opt(coords, stations)
     cout = coutPmedian(coords, stations) + coutTsp(coords, ordreDeVisite)
-    interfaceGraphhiqueTsp(coords, stations, affect, ordreDeVisite)
+    return stations, affect, ordreDeVisite, cout
 
 end
 
@@ -155,33 +177,22 @@ function texte(nbEtats)
     print("\n")
     println("Nous nous intéressons à la résolution du problème de l'anneau étoile avec une instance de $nbEtats Etats des Etats Unis. Nous voulons construire des arrêts de métro/bus dans p Etats de manière à minimiser les distances à parcourir à pieds pour les citoyens puis tracer un cycle reliant toute les stations et de distance minimale. Ce sera à vous de choisir le nombre p de stations à construire sachant qu'il ne peut y avoir qu'un maximum de 1 station par Etat\n")
     println("Nous avons donc implémenté plusieurs manières, plus ou moins bonnes pour résoudre ce problème. Pour ce qui est de la définition des stations, nous avons une méthode Gloutonne, une méthode aléatoire ainsi qu'une résolution avec un programme linéaire donnant nécessairement la meilleure solution. Nous avons également deux méta-heuristiques améliorant les solutions aléatoires et gloutonnes en les répétant un certains nombres de fois et ne gardant que la meilleure solution.")
-    println("\nPour ce qui est du tracé du cycle reliant toutes les stations entre elles, nous avons 2 méthodes : \n-La méthode du plus proche voisin, qui part de la première station et construit un cycle de station proche en proche.\n-Une amélioration de ce même algorithme par une méthode itérative, empêchant les croisements d'arrêtes.\n\n")
+    println("\nPour ce qui est du tracé du cycle reliant toutes les stations entre elles, nous avons 3 méthodes : \n-La méthode du plus proche voisin, qui part de la première station et construit un cycle de station proche en proche.\n-Une amélioration de ce même algorithme par une méthode itérative, empêchant les croisements d'arrêtes.\n-Une résolution par programme linéaire donnant nécessairement la meilleure solution\n\n")
 end
 
 function choixTsp()
-    print("Choisissez quelle méthode de tracé de cycle vous voulez utiliser.\nEntrez 1 pour la méthode du plus proche voisin et 2 pour celle améliorée : ")
+    println("Choisissez quelle méthode de tracé de cycle vous voulez utiliser, entrez : \n\t1 : Plus proche voisin\n\t2 : Plus proche voisin 2 opt\n\t3 : Programme linéaire")
+    print("\nVotre saisie : ")
     entree = parse(Int, readline())
-    print("\n")
+    println()
     while entree != 1 && entree != 2
-        print("Mauvaise entrée. Entrez 1 pour la méthode du plus proche voisin et 2 pour celle améliorée : ")
+        print("Mauvaise entrée, réessayez : ")
         entree = parse(Int, readline())
         print("\n")
     end
     return entree
 end
 
-function choixVitesse()
-    print("Voulez vous tester les vitesses d'exécution des différentes méthodes ou résoudre le problème ?\nEntrez 1 pour faire la résolution et 2 pour tester les vitesses : ")
-    entree = parse(Int, readline())
-    print("\n")
-    while entree != 1 && entree != 2
-        
-        print("Mauvaise entrée. Entrez 1 pour faire la résolution et 2 pour tester les vitesses : ")
-        entree = parse(Int, readline())
-        print("\n")
-    end
-    return entree
-end
 
 function choixPMedian()
 
@@ -209,29 +220,30 @@ function choixPMedian()
 end
 
 function executionProgramme(p, choixCycle, choixMethode)
+    # cas Glouton
     if choixMethode == 1
-        cout = choix1(p, choixCycle)
-        return cout
+        stations, affect, ordreDeVisite, cout, temps = choix1(p, choixCycle)
+        return stations, affect, ordreDeVisite, cout, temps
 
         # Cas glouton amélioré
     elseif choixMethode == 2
-        cout = choix2(p, choixCycle)
-        return cout
+        stations, affect, ordreDeVisite, cout, temps = choix2(p, choixCycle)
+        return stations, affect, ordreDeVisite, cout, temps
 
         # Cas Random
     elseif choixMethode == 3
-        cout = choix3(p, choixCycle)
-        return cout
+        stations, affect, ordreDeVisite, cout, temps = choix3(p, choixCycle)
+        return stations, affect, ordreDeVisite, cout, temps
     
         # Cas Random amélioré
     elseif choixMethode == 4
-        cout = choix4(p, choixCycle)
-        return cout
+        stations, affect, ordreDeVisite, cout, temps = choix4(p, choixCycle)
+        return stations, affect, ordreDeVisite, cout, temps
 
         # Cas PLNE Compacte
     elseif choixMethode == 5
-        cout = choix5(p, choixCycle)
-        return cout
+        stations, affect, ordreDeVisite, cout, temps = choix5(p, choixCycle)
+        return stations, affect, ordreDeVisite, cout, temps
     end
 end
 
@@ -241,13 +253,19 @@ function choix1(p, choixCycle)
         return
     else
         if choixCycle == 1
-            cout = ae_ppv_glouton(p)
+            res = @timed ae_ppv_glouton(p)
+            temps = res.time
+            stations, affect, ordreDeVisite, cout = res.value
         elseif choixCycle == 2
-            cout = ae_2opt_glouton(p)
+            res = @timed ae_ppv2opt_glouton(p)
+            temps = res.time
+            stations, affect, ordreDeVisite, cout = res.value
         elseif choixCycle == 3
-            cout = ae_plne_glouton(p)
+            res = ae_plne_glouton(p)
+            temps = res.time
+            stations, affect, ordreDeVisite, cout = res.value
         end
-        return cout
+        return stations, affect, ordreDeVisite, cout, temps
     end
 
 end
@@ -257,62 +275,86 @@ function choix2(p, choixCycle)
         return
     else
         if choixCycle == 1
-            cout = ae_ppv_metaHeuristiqueGlouton(p)
+            res = @timed ae_ppv_metaHeuristiqueGlouton(p)
+            temps = res.time
+            stations, affect, ordreDeVisite, cout = res.value
         elseif choixCycle == 2
-            cout = ae_2opt_metaHeuristiqueGlouton(p)
+            res = @timed ae_ppv2opt_metaHeuristiqueGlouton(p)
+            temps = res.time
+            stations, affect, ordreDeVisite, cout = res.value
         elseif choixCycle == 3
-            cout = ae_plne_metaHeuristiqueGlouton(p)
+            res = @timed ae_plne_metaHeuristiqueGlouton(p)
+            temps = res.time
+            stations, affect, ordreDeVisite, cout = res.value
         end
 
-        return cout
+        return stations, affect, ordreDeVisite, cout, temps
     end
 
 end
 
 function choix3(p, choixCycle)
     print("Choisissez le nombres d'essais alétatoires que vous voulez effectuer : ")
-    nbEssais = defNbEssaisMain()
+    nbEssais = defNbEssais()
     if nbEssais == "q"
         return
     else
         if choixCycle == 1
-            cout = ae_ppv_random(p)
+            res = @timed ae_ppv_random(p)
+            temps = res.time
+            stations, affect, ordreDeVisite, cout = res.value
         elseif choixCycle == 2
-            cout = ae_2opt_random(p)
+            res = @timed ae_ppv2opt_random(p)
+            temps = res.time
+            stations, affect, ordreDeVisite, cout = res.value
         elseif choixCycle == 3
-            cout = ae_plne_random(p)
+            res = @timed ae_plne_random(p)
+            temps = res.time
+            stations, affect, ordreDeVisite, cout = res.value
         end
-        return cout
+        return stations, affect, ordreDeVisite, cout, temps
     end
 end
 
 function choix4(p, choixCycle)
     print("Choisissez le nombres d'itérations d'amélioration par descente stochastique sur une heuristique alétatoire que vous voulez effectuer (100 recommandées) : ")
-    nbEssais = defNbEssaisMain()
+    nbEssais = defNbEssais()
     if nbEssais == "q"
         return
     else
         if choixCycle == 1
-            cout = ae_ppv_metaHeuristiqueRandom(p, nbEssais)
+            stations, affect, ordreDeVisite, cout, temps = @timed ae_ppv_metaHeuristiqueRandom(p, nbEssais)
+            temps = res.time
+            stations, affect, ordreDeVisite, cout = res.value
         elseif choixCycle == 2
-            cout = ae_2opt_metaHeuristiqueRandom(p, nbEssais)
+            stations, affect, ordreDeVisite, cout, temps = @timed ae_ppv2opt_metaHeuristiqueRandom(p, nbEssais)
+            temps = res.time
+            stations, affect, ordreDeVisite, cout = res.value
         elseif choixCycle == 3
-            cout = ae_plne_metaHeuristiqueRandom(p, nbEssais)
+            stations, affect, ordreDeVisite, cout, temps = @timed ae_plne_metaHeuristiqueRandom(p, nbEssais)
+            temps = res.time
+            stations, affect, ordreDeVisite, cout = res.value
         end   
-        return cout
+        return stations, affect, ordreDeVisite, cout, temps
     end
 
 end
 
 function choix5(p, choixCycle)
     if choixCycle == 1
-        cout = ae_ppv_plne(p)
+        stations, affect, ordreDeVisite, cout, temps = @timed ae_ppv_plne(p)
+        temps = res.time
+        stations, affect, ordreDeVisite, cout = res.value
     elseif choixCycle == 2
-        cout = ae_2opt_plne(p)
+        stations, affect, ordreDeVisite, cout, temps = @timed ae_ppv2opt_plne(p)
+        temps = res.time
+        stations, affect, ordreDeVisite, cout = res.value
     elseif choixCycle == 3
-        cout = ae_plne_plne(p)
+        stations, affect, ordreDeVisite, cout, temps = @timed ae_plne_plne(p)
+        temps = res.time
+        stations, affect, ordreDeVisite, cout = res.value
     end
-    return cout
+    return stations, affect, ordreDeVisite, cout, temps
 end
 
 
@@ -336,7 +378,7 @@ function defNbStations(nbEtats)
     end
 end
 
-function defNbEssaisMain()
+function defNbEssais()
     while true
         print("\nNb Essais : ")
         nbEssais = readline()
@@ -355,7 +397,7 @@ function defNbEssaisMain()
 
 end
 
-function remplirHistorique(choixExec, choixCycle, choixMethode, p, cout, temps)
+function remplirHistorique(choixCycle, choixMethode, p, cout, temps)
     if choixMethode == 1
         methodePmedian = "heuristique gloutonne"
 
@@ -384,17 +426,11 @@ function remplirHistorique(choixExec, choixCycle, choixMethode, p, cout, temps)
         methodeCycle = "programme linéaire"
     end
 
-    if choixExec == 1
-        temps = -1
-        intro = "Test de solution : "
-    elseif choixExec == 2
-        intro = "Test de vitesse d'exécution : "
-    end
 
-
+    # On remplit le fichier historique.txt et on affiche les résultats sur le terminal
     open("historique.txt", "a") do f
-        println(intro)
-        println(f, intro)
+        println("Test de solution : ")
+        println(f, "Test de solution : ")
 
         println("Nombre de stations à placer : $p")
         println(f, "Nombre de stations à placer : $p")
@@ -404,15 +440,15 @@ function remplirHistorique(choixExec, choixCycle, choixMethode, p, cout, temps)
 
         println("Méthode TSP choisie : $methodeCycle")
         println(f, "Méthode TSP choisie : $methodeCycle")
+    
+        println("Coût de la solution : $(round(cout, digits=2))")
+        println(f, "Coût de la solution : $(round(cout, digits=2))")
+        
+        println("Temps d'exécution : $temps")
+        println(f, "Temps d'exécution : $temps")
 
-        if temps > 0
-            println("Temps d'exécution : $temps")
-            println(f, "Temps d'exécution : $temps")
-        else
-            println("Coût de la solution : $(round(cout, digits=2))")
-            println(f, "Coût de la solution : $(round(cout, digits=2))")
-        end
-
+        println()
+        println("------------------------------------")
         println()
         println(f)
     end
@@ -420,245 +456,3 @@ end
 ###########################################################
 
 
-########################### Fonctions tests de vitesse de résolution ############################
-
-function testVitesse(choixCycle, choixMethode, nbEtats)
-    
-    # Cas glouton
-    if choixMethode == "1"
-        p = defNbStations(nbEtats)
-        if choixCycle == 1
-            t = @elapsed testVitesse_ppv_Glouton(p)
-        elseif choixCycle == 2
-            t = @elapsed testVitesse_ae_2opt_glouton(p)
-        elseif choixCycle == 3
-            t = @elapsed testVitesse_ae_plne_glouton(p)
-        end
-        println("L'exécution a pris $t secondes\n") 
-        return t
-
-        # Cas glouton amélioré
-    elseif choixMethode == "2"
-        p = defNbStations(nbEtats)
-        if choixCycle == 1
-            t = @elapsed testVitesse_ae_ppv_metaHeuristiqueGlouton(p)
-        elseif choixCycle == 2
-            t = @elapsed testVitesse_ae_2opt_metaHeuristiqueGlouton(p)
-        elseif choixCycle == 3
-            t = @elapsed testVitesse_ae_plne_metaHeuristiqueGlouton(p)
-        end
-        println("L'exécution a pris $t secondes\n") 
-        return t
-
-        # Cas Random
-    elseif choixMethode == "3"
-        p = defNbStations(nbEtats)
-        print("Choisissez le nombres d'essais alétatoires que vous voulez effectuer : ")
-        nbEssais = defNbEssaisMain()
-        if nbEssais == "q"
-            return
-        else
-            if choixCycle == 1
-                t = @elapsed testVitesse_ae_ppv_random(p, nbEssais)
-            elseif choixCycle == 2
-                t = @elapsed testVitesse_ae_2opt_random(p, nbEssais)
-            elseif choixCycle == 3
-                t = @elapsed testVitesse_ae_plne_random(p, nbEssais)
-            end
-            println("L'exécution a pris $t secondes\n")
-            return t
-                
-        end
-    
-        # Cas Random amélioré
-    elseif choixMethode == "4"
-        p = defNbStations(nbEtats)
-        print("Choisissez le nombres d'itérations d'amélioration par descente stochastique sur une heuristique alétatoire que vous voulez effectuer (100 recommandées) : ")
-        nbEssais = defNbEssaisMain()
-        if nbEssais == "q"
-            return
-        else
-            if choixCycle == 1
-                t = @elapsed testVitesse_ae_ppv_metaHeuristiqueRandom(p, nbEssais)
-            elseif choixCycle == 2
-                t = @elapsed testVitesse_ae_2opt_metaHeuristiqueRandom(p, nbEssais)
-            elseif choixCycle == 3
-                t = @elapsed testVitesse_ae_plne_metaHeuristiqueRandom(p, nbEssais)
-            end
-            println("L'exécution a pris $t secondes\n")
-            return t
-                
-        end
-        # Cas PLNE Compacte
-    elseif choixMethode == "5"
-        p = defNbStations(nbEtats)
-        if choixCycle == 1
-            t = @elapsed testVitesse_ae_ppv_plne(p)
-        elseif choixCycle == 2
-            t = @elapsed testVitesse_ae_2opt_plne(p)
-        elseif choixCycle == 3
-            t = @elapsed testVitesse_ae_plne_plne(p)
-        end
-        println("L'exécution a pris $t secondes\n")
-        return t
-
-    else
-        print("Mauvaise valeure entrée, réessayez.")
-        return -1
-    end
-
-end
-
-function testVitesse_ppv_Glouton(p)
-    coords, minX, maxX, minY, maxY = initCoordN()
-
-    stations = defStationsGlouton(p, coords, minX, maxX, minY, maxY)
-
-    affect = affecterMedians(coords, stations)
-    ordreDeVisite = plusProcheVoisin(coords, stations)
-    cout = coutPmedian(coords, stations) + coutTsp(coords, ordreDeVisite)
-end
-
-
-function testVitesse_ae_ppv_random(p, nbEssais=1)
-    coords, = initCoordN()
-
-    stations = meilleureSolution(p, coords, nbEssais)
-
-    affect = affecterMedians(coords, stations)
-    ordreDeVisite = plusProcheVoisin(coords, stations)
-    cout = coutPmedian(coords, stations) + coutTsp(coords, ordreDeVisite)
-
-end
-
-function testVitesse_ae_ppv_metaHeuristiqueGlouton(p)
-    coords, minX, maxX, minY, maxY = initCoordN()
-
-    stations = defStationsGlouton(p, coords, minX, maxX, minY, maxY)
-    stations, cout_pMedian = applicationStochastique(p, coords, stations)
-
-    affect = affecterMedians(coords, stations)
-    ordreDeVisite = plusProcheVoisin(coords, stations)
-    cout = cout_pMedian + coutTsp(coords, ordreDeVisite)
-
-end
-
-function testVitesse_ae_ppv_metaHeuristiqueRandom(p, nbEssais=50)
-    coords, = initCoordN()
-
-    stations, cout_pMedian = iterationsStochastiqueRandom(p, coords, nbEssais)
-
-    affect = affecterMedians(coords, stations)
-    ordreDeVisite = plusProcheVoisin(coords, stations)
-    cout = cout_pMedian + coutTsp(coords, ordreDeVisite)
-
-end
-
-function testVitesse_ae_ppv_plne(p)
-
-    coords, = initCoordN()
-    nbEtats = length(coords)
-    d = initMatriceDistance(coords, nbEtats)
-    
-    m = Model(GLPK.Optimizer)
-    @variable(m, y[1:nbEtats, 1:nbEtats], Bin)
-
-    @objective(m, Min, sum(d[i, j]*y[i, j] for i in 1:nbEtats,j in 1:nbEtats))
-
-    @constraint(m, sum(y[i, i] for i in 1:nbEtats) == p)
-    @constraint(m, [i=1:nbEtats] ,sum(y[i, j] for j in 1:nbEtats) == 1)
-    @constraint(m, [i=1:nbEtats, j=1:nbEtats] , y[i, j] <= y[j, j])
-    @constraint(m, y[1, 1] == 1)    # On force le point 1 à être une station
-
-    optimize!(m)
-
-    status = termination_status(m)
-
-    if status == INFEASIBLE
-        println("Le problème n'est pas réalisable")
-    elseif status == UNBOUNDED
-        println("Le problème est non borné")
-    elseif status == OPTIMAL
-        stations = Int[]
-        affect = Vector{Int}(undef, nbEtats)
-
-        for i in 1:nbEtats
-            if value(y[i, i]) > 0.9
-                push!(stations, i)
-            end
-        end
-        for i in 1:nbEtats
-            for j in 1:nbEtats
-                if value(y[i, j]) > 0.9
-                    affect[i] = j
-                end
-            end
-        end
-
-        # println("Liste des ièmes Etats choisis pour avoir une station de metro/bus via résolution d'un PLNE compacte : \n$stations\n")
-        
-
-        # println("Affectation des autres Etats à la station la plus proche. Affect[i] = j signifie que l'Etat i est affecté à la station de l'Etat j : \n$affect\n")
-        ordreDeVisite = plusProcheVoisin(coords, stations)
-        cout = objective_value(m) + coutTsp(coords, ordreDeVisite)
-    end
-end
-
-#### plus proche voisin amélioré
-function testVitesse_ae_2opt_glouton(p)
-
-    coords, minX, maxX, minY, maxY = initCoordN()
-
-    stations = defStationsGlouton(p, coords, minX, maxX, minY, maxY)
-
-    affect = affecterMedians(coords, stations)
-    # ordreDeVisite = plusProcheVoisin_2opt(coords, stations)
-    cout = coutPmedian(coords, stations) + coutTsp(coords, ordreDeVisite)
-
-end
-
-function testVitesse_ae_2opt_random(p, nbEssais=1)
-
-end
-
-function testVitesse_ae_2opt_metaHeuristiqueGlouton(p)
-
-end
-
-function testVitesse_ae_2opt_metaHeuristiqueRandom(p, nbEssais=50)
-
-end
-
-function testVitesse_ae_2opt_plne(p)
-
-end
-
-#### plne compacte
-function testVitesse_ae_plne_glouton(p)
-
-    coords, minX, maxX, minY, maxY = initCoordN()
-
-    stations = defStationsGlouton(p, coords, minX, maxX, minY, maxY)
-
-    affect = affecterMedians(coords, stations)
-    # ordreDeVisite = plusProcheVoisin_2opt(coords, stations)
-    cout = coutPmedian(coords, stations) + coutTsp(coords, ordreDeVisite)
-    interfaceGraphhiqueTsp(coords, stations, affect, ordreDeVisite)
-
-end
-
-function testVitesse_ae_plne_random(p, nbEssais=1)
-
-end
-
-function testVitesse_ae_plne_metaHeuristiqueGlouton(p)
-
-end
-
-function testVitesse_ae_plne_metaHeuristiqueRandom(p, nbEssais=50)
-
-end
-
-function testVitesse_ae_plne_plne(p)
-
-end
