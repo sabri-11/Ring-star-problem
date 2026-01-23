@@ -4,14 +4,6 @@ using Random
 using BenchmarkTools
 using Plots
 
-# Définition de constantes pour le statut de résolution du problème
-const OPTIMAL = JuMP.MOI.OPTIMAL
-const INFEASIBLE = JuMP.MOI.INFEASIBLE
-const UNBOUNDED = JuMP.MOI.DUAL_INFEASIBLE;
-
-
-
-
 function interfaceGraphhiquePmedian(coords, stations, affect)
     allX = [c[1] for c in coords]
     allY = [c[2] for c in coords]
@@ -161,6 +153,9 @@ function pMedian_plneCompacte(p)
     optimize!(m)
 
     status = termination_status(m)
+    stations = Int[]
+    affect = Vector{Int}(undef, nbEtats)
+    cout = Inf
 
     if status == INFEASIBLE
         println("Le problème n'est pas réalisable")
@@ -178,26 +173,21 @@ function pMedian_plneCompacte(p)
         for i in 1:nbEtats
             for j in 1:nbEtats
                 if value(y[i, j]) > 0.9
-                    affect[i] = j
+                    affect[i] = j 
+                    break       # On a trouvé sa station affectée, on passe au point suivant.
                 end
             end
         end
 
         # println("Liste des ièmes Etats choisis pour avoir une station de metro/bus via résolution d'un PLNE compacte : \n$stations\n")
-        
-
         # println("Affectation des autres Etats à la station la plus proche. Affect[i] = j signifie que l'Etat i est affecté à la station de l'Etat j : \n$affect\n")
-
         # println("Calcul du coût de la solution...")
         cout = objective_value(m)
         # println("Cout de la solution (à minimiser) : $cout")
-
         # interfaceGraphhiquePmedian(coords, stations, affect)
-        return coords, stations, affect, cout
+        
     end
-
-    
-    
+    return coords, stations, affect, cout
 end
 
 

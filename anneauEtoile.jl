@@ -1,25 +1,63 @@
 include("pMedian.jl")
 include("tsp.jl")
 
-function main()
-    coords, = initCoordN()
-    nbEtats = length(coords)
-    temps = -1
-    open("historique.txt", "w") do f
-        write(f, "historique des tests réalisés : \n\n")
+
+######################################## Affichage graphique des résultats ################################
+
+function interfaceGraphhique_anneauEtoile(coords, stations, affect, ordreDeVisite, cout)
+    allX = [c[1] for c in coords]
+    allY = [c[2] for c in coords]
+
+     # Créer un nuage de points 
+    p = scatter(allX, allY, 
+        label="Villes", 
+        color = :blue, 
+        markersize=4,
+        legend = :outertopright,
+        title = "Visualisation Tsp Anneau etoile.\nCout solution (à min) : $(round(cout, digits=2))",
+        xlabel = "X", ylabel = "Y",
+        aspect_ratio = :equal
+    )
+
+    # Affecte chaque ville à sa station la plus proche en la reliant par un trait gris fin
+    for i in 1:length(coords)
+        indice = affect[i]
+        xVille, yVille = coords[i]
+        xStation, yStation = coords[indice]
+
+        plot!(p, [xVille, xStation], [yVille, yStation], color=:gray, alpha=0.5, label="")
     end
 
-    texte(nbEtats)
-    while true
-        choixCycle = choixTsp()
-        choixMethode = choixPMedian()
-        p = defNbStations(nbEtats)
-        
-        stations, affect, ordreDeVisite, cout, temps = executionProgramme(p, choixCycle, choixMethode)
-        remplirHistorique(choixCycle, choixMethode, p, cout, temps)
-        interfaceGraphhiqueTsp(coords, stations, affect, ordreDeVisite, cout)
+
+    # Tracé du cycle avec une ligne noire
+    cycleX = [coords[i][1] for i in ordreDeVisite]
+    cycleY = [coords[i][2] for i in ordreDeVisite]
+    
+    # Fermeture de la boucle
+    push!(cycleX, coords[ordreDeVisite[1]][1])
+    push!(cycleY, coords[ordreDeVisite[1]][2])
+
+    plot!(p, cycleX, cycleY, color=:black, linewidth=2, label="Métro")
+
+    # affichage des stations 
+    # On retire le dernier point (doublon de fermeture) pour ne pas afficher deux fois l'étoile
+    scatter!(p, cycleX[1:end-1], cycleY[1:end-1], 
+        color = :red, 
+        markersize = 10, 
+        marker = :star5, 
+        label = "Stations"
+    )
+
+    
+    # On annote directement dans la boucle 
+    for (k, s) in enumerate(ordreDeVisite)  # enumerate permet d'associer le couple (k, s) avec s la valeur dans la liste ordreDeVisite et k l'indice de la liste
+        (x, y) = coords[s]
+        annotate!(p, x, y+150, text(string(k), 10, :black, :bottom))
     end
+    
+    display(p)
 end
+
 
 
 
@@ -139,319 +177,110 @@ function ae_ppv2opt_plne(p)
 end
 
 #### plne compacte
-function ae_plne_glouton(p)
 
-    coords, minX, maxX, minY, maxY = initCoordN()
+function ae_plne(p)
+    coords, = initCoordN()
+    nbEtats = length(coords)   
+    d = initMatriceDistance(coords, nbEtats)
 
-    stations = defStationsGlouton(p, coords, minX, maxX, minY, maxY)
+    m = Model(GLPK.Optimizer)
+    @variable(m, y[1:nbEtats, 1:nbEtats], Bin)      # yii = 1 si p est une station et yij = 1 si la ville i est affectée à la station j
 
-    affect = affecterMedians(coords, stations)
-    # ordreDeVisite = plusProcheVoisin_2opt(coords, stations)
-    cout = coutPmedian(coords, stations) + coutTsp(coords, ordreDeVisite)
-    return stations, affect, ordreDeVisite, cout
+    @variable(m, x[1:nbEtats, 1:nbEtats], Bin)      # x représente les arrêtes, il y a autant d'arrête que de stations. xij = 1 si i et j sont des stations reliées par une arrête
 
-end
+    @variable(m, 0 <= z[1:nbEtats, 1:nbEtats] <= p-1, Int)
 
-function ae_plne_random(p, nbEssais=1)
+    @objective( m,  Min, sum(d[i, j]*x[i, j] for i in 1:nbEtats, j in 1:nbEtats) + sum(d[i, j]*y[i, j] for i in 1:nbEtats, j in 1:nbEtats) )
 
-end
 
-function ae_plne_metaHeuristiqueGlouton(p)
+    @constraint(m, sum(y[i, i] for i in 1:nbEtats) == p)    # cte (1)
 
-end
+    for i in 1:nbEtats
+        @constraint(m, sum(y[i, j] for j in 1:nbEtats) == 1)    # cte (2)
 
-function ae_plne_metaHeuristiqueRandom(p, nbEssais=50)
 
-end
+        # On voit le graphe comme un graphe orienté formant un cycle, si on fait 2*y[i, i], on pourrait
+        # avoir 2 arrêtes partant d'un même sommet et non une arrête entrante et une sortante
+        @constraint(m, sum(x[i, j] for j in 1:nbEtats) == y[i, i])   # cte (4)
+        @constraint(m, sum(x[j, i] for j in 1:nbEtats) == y[i, i])   # cte (4)
 
-function ae_plne_plne(p)
+        @constraint(m, x[i, i] == 0)    # il ne peut pas y avoir d'arêtes boucles sur une station
 
-end
-##############################################
+    end
 
-################################## Fonctions pour le main ###################################
+    for i in 1:nbEtats
+        for j in 1:nbEtats
+            @constraint(m, y[i, j] <= y[j, j])   # cte (3)  (si i = j ici y[j, j] <= y[j, j] renvoie vrai, ça ne gène donc pas le solveur)
 
-function texte(nbEtats)
+            if i != 1 
+                 @constraint(m, z[i, j] <= (p - 1) * x[i, j])   # cte (7)
+            end  
+        end
+
+    end
     
-    print("\n")
-    println("Nous nous intéressons à la résolution du problème de l'anneau étoile avec une instance de $nbEtats Etats des Etats Unis. Nous voulons construire des arrêts de métro/bus dans p Etats de manière à minimiser les distances à parcourir à pieds pour les citoyens puis tracer un cycle reliant toute les stations et de distance minimale. Ce sera à vous de choisir le nombre p de stations à construire sachant qu'il ne peut y avoir qu'un maximum de 1 station par Etat\n")
-    println("Nous avons donc implémenté plusieurs manières, plus ou moins bonnes pour résoudre ce problème. Pour ce qui est de la définition des stations, nous avons une méthode Gloutonne, une méthode aléatoire ainsi qu'une résolution avec un programme linéaire donnant nécessairement la meilleure solution. Nous avons également deux méta-heuristiques améliorant les solutions aléatoires et gloutonnes en les répétant un certains nombres de fois et ne gardant que la meilleure solution.")
-    println("\nPour ce qui est du tracé du cycle reliant toutes les stations entre elles, nous avons 3 méthodes : \n-La méthode du plus proche voisin, qui part de la première station et construit un cycle de station proche en proche.\n-Une amélioration de ce même algorithme par une méthode itérative, empêchant les croisements d'arrêtes.\n-Une résolution par programme linéaire donnant nécessairement la meilleure solution\n\n")
-end
-
-function choixTsp()
-    println("Choisissez quelle méthode de tracé de cycle vous voulez utiliser, entrez : \n\t1 : Plus proche voisin\n\t2 : Plus proche voisin 2 opt\n\t3 : Programme linéaire")
-    print("\nVotre saisie : ")
-    entree = parse(Int, readline())
-    println()
-    while entree != 1 && entree != 2
-        print("Mauvaise entrée, réessayez : ")
-        entree = parse(Int, readline())
-        print("\n")
-    end
-    return entree
-end
-
-
-function choixPMedian()
-
-    println("\nChoisissez la méthode que vous souhaitez utiliser, entrez : \n
-    1 pour utiliser l'heuristique gloutonne
-    2 pour utiliser l'heuristique gloutonne améliorée
-    3 pour utiliser l'heuristique aléatoire
-    4 pour utiliser l'heuristique aléatoire amélioréé
-    5 pour utiliser la résolution par programme linéaire.")
-    print("\nVotre saisie : ")
-    entree = readline()
-    print("\n")
-    entree = tryparse(Int, entree)
-
-    while !isnothing(entree) && entree != 1 && entree != 2 && entree != 3 && entree != 4 && entree != 5
-        println("Mauvaise valeure entrée, réessayez.")
-        print("\nVotre saisie : ")
-        entree = readline()
-        print("\n")
-        tryparse(Int, entree)
-    end
-
-    return entree
+    @constraint(m, sum(z[1, j] for j in 2:nbEtats) == p-1)  # cte (5)
     
-end
+    for i in 2:nbEtats
+        zji = sum(z[j, i] for j in 1:nbEtats)
+        zij = sum(z[i, j] for j in 1:nbEtats)
 
-function executionProgramme(p, choixCycle, choixMethode)
-    # cas Glouton
-    if choixMethode == 1
-        stations, affect, ordreDeVisite, cout, temps = choix1(p, choixCycle)
-        return stations, affect, ordreDeVisite, cout, temps
-
-        # Cas glouton amélioré
-    elseif choixMethode == 2
-        stations, affect, ordreDeVisite, cout, temps = choix2(p, choixCycle)
-        return stations, affect, ordreDeVisite, cout, temps
-
-        # Cas Random
-    elseif choixMethode == 3
-        stations, affect, ordreDeVisite, cout, temps = choix3(p, choixCycle)
-        return stations, affect, ordreDeVisite, cout, temps
+        @constraint(m, zji == zij + y[i, i])   # cte (6)
+    end
     
-        # Cas Random amélioré
-    elseif choixMethode == 4
-        stations, affect, ordreDeVisite, cout, temps = choix4(p, choixCycle)
-        return stations, affect, ordreDeVisite, cout, temps
+    @constraint(m, y[1, 1] == 1)    # On force le point 1 à être une station
 
-        # Cas PLNE Compacte
-    elseif choixMethode == 5
-        stations, affect, ordreDeVisite, cout, temps = choix5(p, choixCycle)
-        return stations, affect, ordreDeVisite, cout, temps
-    end
-end
+    optimize!(m)
 
-function choix1(p, choixCycle)
-    
-    if p == "q"
-        return
-    else
-        if choixCycle == 1
-            res = @timed ae_ppv_glouton(p)
-            temps = res.time
-            stations, affect, ordreDeVisite, cout = res.value
-        elseif choixCycle == 2
-            res = @timed ae_ppv2opt_glouton(p)
-            temps = res.time
-            stations, affect, ordreDeVisite, cout = res.value
-        elseif choixCycle == 3
-            res = ae_plne_glouton(p)
-            temps = res.time
-            stations, affect, ordreDeVisite, cout = res.value
-        end
-        return stations, affect, ordreDeVisite, cout, temps
-    end
+    status = termination_status(m)
 
-end
+    stations = Int[]
+    affect = Vector{Int}(undef, nbEtats)
+    ordreDeVisite = Int[]
+    cout = Inf
 
-function choix2(p, choixCycle)
-    if p == "q"
-        return
-    else
-        if choixCycle == 1
-            res = @timed ae_ppv_metaHeuristiqueGlouton(p)
-            temps = res.time
-            stations, affect, ordreDeVisite, cout = res.value
-        elseif choixCycle == 2
-            res = @timed ae_ppv2opt_metaHeuristiqueGlouton(p)
-            temps = res.time
-            stations, affect, ordreDeVisite, cout = res.value
-        elseif choixCycle == 3
-            res = @timed ae_plne_metaHeuristiqueGlouton(p)
-            temps = res.time
-            stations, affect, ordreDeVisite, cout = res.value
-        end
-
-        return stations, affect, ordreDeVisite, cout, temps
-    end
-
-end
-
-function choix3(p, choixCycle)
-    print("Choisissez le nombres d'essais alétatoires que vous voulez effectuer : ")
-    nbEssais = defNbEssais()
-    if nbEssais == "q"
-        return
-    else
-        if choixCycle == 1
-            res = @timed ae_ppv_random(p)
-            temps = res.time
-            stations, affect, ordreDeVisite, cout = res.value
-        elseif choixCycle == 2
-            res = @timed ae_ppv2opt_random(p)
-            temps = res.time
-            stations, affect, ordreDeVisite, cout = res.value
-        elseif choixCycle == 3
-            res = @timed ae_plne_random(p)
-            temps = res.time
-            stations, affect, ordreDeVisite, cout = res.value
-        end
-        return stations, affect, ordreDeVisite, cout, temps
-    end
-end
-
-function choix4(p, choixCycle)
-    print("Choisissez le nombres d'itérations d'amélioration par descente stochastique sur une heuristique alétatoire que vous voulez effectuer (100 recommandées) : ")
-    nbEssais = defNbEssais()
-    if nbEssais == "q"
-        return
-    else
-        if choixCycle == 1
-            stations, affect, ordreDeVisite, cout, temps = @timed ae_ppv_metaHeuristiqueRandom(p, nbEssais)
-            temps = res.time
-            stations, affect, ordreDeVisite, cout = res.value
-        elseif choixCycle == 2
-            stations, affect, ordreDeVisite, cout, temps = @timed ae_ppv2opt_metaHeuristiqueRandom(p, nbEssais)
-            temps = res.time
-            stations, affect, ordreDeVisite, cout = res.value
-        elseif choixCycle == 3
-            stations, affect, ordreDeVisite, cout, temps = @timed ae_plne_metaHeuristiqueRandom(p, nbEssais)
-            temps = res.time
-            stations, affect, ordreDeVisite, cout = res.value
-        end   
-        return stations, affect, ordreDeVisite, cout, temps
-    end
-
-end
-
-function choix5(p, choixCycle)
-    if choixCycle == 1
-        stations, affect, ordreDeVisite, cout, temps = @timed ae_ppv_plne(p)
-        temps = res.time
-        stations, affect, ordreDeVisite, cout = res.value
-    elseif choixCycle == 2
-        stations, affect, ordreDeVisite, cout, temps = @timed ae_ppv2opt_plne(p)
-        temps = res.time
-        stations, affect, ordreDeVisite, cout = res.value
-    elseif choixCycle == 3
-        stations, affect, ordreDeVisite, cout, temps = @timed ae_plne_plne(p)
-        temps = res.time
-        stations, affect, ordreDeVisite, cout = res.value
-    end
-    return stations, affect, ordreDeVisite, cout, temps
-end
-
-
-
-function defNbStations(nbEtats)
-    while true
-        println("Choisissez le nombres de stations que vous voulez placer parmis les $nbEtats Etats (un entier entre 1 et $nbEtats compris) : ")
-        print("Nb stations à placer : ")
-        p = readline()
-        if p == "q"
-            print("\n")
-            return "q"
-        end
-        p = tryparse(Int, p)    # tryparse au lieu de parse permet de renvoyer nothing si p n'est pas un nombre
-        if !isnothing(p) && p <= nbEtats && p > 0
-            print("\n")
-            return p
-        else
-            println("\nMauvaise valeure entrée, réessayez ou entrez q pour quitter.")
-        end
-    end
-end
-
-function defNbEssais()
-    while true
-        print("\nNb Essais : ")
-        nbEssais = readline()
-        if nbEssais == "q"
-            print("\n")
-            return "q"
-        end
-        nbEssais = tryparse(Int, nbEssais)
-        if !isnothing(nbEssais) && nbEssais > 0 
-            print("\n")
-            return nbEssais
-        else
-            println("\nMauvaise valeure entrée, réessayez ou entrez q pour quitter.")
-        end
-    end
-
-end
-
-function remplirHistorique(choixCycle, choixMethode, p, cout, temps)
-    if choixMethode == 1
-        methodePmedian = "heuristique gloutonne"
-
-        # Cas glouton amélioré
-    elseif choixMethode == 2
-        methodePmedian = "méta heuristique gloutonne"
-
-        # Cas Random
-    elseif choixMethode == 3
-        methodePmedian = "heuristique random répétée un certain nombre de fois"
-    
-        # Cas Random amélioré
-    elseif choixMethode == 4
-        methodePmedian = "méta heuristique random améliorée par descente stochastique"
-                
-        # Cas PLNE Compacte
-    elseif choixMethode == 5
-        methodePmedian = "programme linéaire"
-    end
-
-    if choixCycle == 1
-        methodeCycle = "plus proche voisin"
-    elseif choixCycle == 2
-        methodeCycle = "plus proche voisin améliorée"
-    elseif choixCycle == 3
-        methodeCycle = "programme linéaire"
-    end
-
-
-    # On remplit le fichier historique.txt et on affiche les résultats sur le terminal
-    open("historique.txt", "a") do f
-        println("Test de solution : ")
-        println(f, "Test de solution : ")
-
-        println("Nombre de stations à placer : $p")
-        println(f, "Nombre de stations à placer : $p")
-
-        println("Méthode p-Médian choisie : $methodePmedian")
-        println(f, "Méthode p-Médian choisie : $methodePmedian")
-
-        println("Méthode TSP choisie : $methodeCycle")
-        println(f, "Méthode TSP choisie : $methodeCycle")
-    
-        println("Coût de la solution : $(round(cout, digits=2))")
-        println(f, "Coût de la solution : $(round(cout, digits=2))")
+    if status == INFEASIBLE
+        println("Le problème n'est pas réalisable")
+    elseif status == UNBOUNDED
+        println("Le problème est non borné")
+    elseif status == OPTIMAL
         
-        println("Temps d'exécution : $temps")
-        println(f, "Temps d'exécution : $temps")
 
-        println()
-        println("------------------------------------")
-        println()
-        println(f)
+        for i in 1:nbEtats
+            if value(y[i, i]) > 0.9
+                push!(stations, i)
+            end
+        end
+        for i in 1:nbEtats
+            for j in 1:nbEtats
+                if value(y[i, j]) > 0.9
+                    affect[i] = j
+                    break   # On a trouvé sa station affectée, on passe au point suivant.
+                end
+            end
+        end
+        
+        etat = 1
+
+        while length(ordreDeVisite) < p
+            push!(ordreDeVisite, etat)
+            bool = false
+
+            for j in 1:nbEtats
+                if value(x[etat, j]) > 0.9      # si il y a une arrête entre l'état ou on est et l'etat j, alors on passe à j qu'on ajoutera à ordreDeVisite
+                    etat = j
+                    bool = true
+                    break 
+                end
+            end
+
+            if !bool 
+                break
+            end
+        end
+
+        cout = objective_value(m)
+
     end
+    return stations, affect, ordreDeVisite, cout
 end
-###########################################################
-
-
