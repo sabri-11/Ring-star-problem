@@ -4,191 +4,6 @@ using Random
 using BenchmarkTools
 using Plots
 
-function interfaceGraphhiquePmedian(coords, stations, affect)
-    allX = [c[1] for c in coords]
-    allY = [c[2] for c in coords]
-
-    # Créer un nuage de points 
-    p = scatter(allX, allY, 
-        label="Villes", 
-        color = :blue, 
-        markersize=4,
-        legend = :outertopright,
-        title = "Visualisation p-médian",
-        xlabel = "X", ylabel = "Y"
-    )
-
-    # Affecte chaque ville à sa station la plus proche en la reliant par un trait gris fin
-    for i in 1:length(coords)
-        indice = affect[i]
-        xVille, yVille = coords[i]
-        xStation, yStation = coords[indice]
-
-        plot!(p, [xVille, xStation], [yVille, yStation], color=:gray, alpha=0.5, label="")
-    end
-
-    allStationX = [coords[s][1] for s in stations]
-    allStationY = [coords[s][2] for s in stations]
-
-    scatter!(allStationX, allStationY, 
-        label = "Stations", 
-        color = :red, 
-        markersize = 8, 
-        marker = :star5 # Forme d'étoile pour bien les voir
-    )
-
-    display(p)
-
-end
-
-###############################  Fonction globales d'appel ##############################
-
-function pMedian_heuristiqueGloutonne(p)
-    # Pour p=20, on a 18 stations choisies au lieue de 20 car certains rectangles peuvent être vide. Faut il choisir combler avec n'importe quelle stations
-    # ou laisser moins de stations que les p demandées initialement ?
-    print("\n")
-
-    coords, minX, maxX, minY, maxY = initCoordN()
-    # println("Coordonnées (x, y) de chaque ville extraite du fichier 'att48.tsp', représentant 48 états des Etats Unis : \n$coords\n")
-
-    stations = defStationsGlouton(p, coords, minX, maxX, minY, maxY)
-    #println("Liste des ièmes Etats choisis pour avoir une station de metro/bus via l'algorithme glouton : \n$stations\n")
-    println("Définition des stations.")
-
-    affect = affecterMedians(coords, stations)
-    # println("Affectation des autres Etats à la station la plus proche. Affect[i] = j signifie que l'Etat i est affecté à la station de l'Etat j : \n$affect\n")
-    println("Affectation des autres Etats à la station la plus proche.")
-
-    println("Calcule du coût de la solution...")
-    cout = coutPmedian(coords, stations)
-    println("Coût de la solution (à minimiser) : $cout")
-
-    interfaceGraphhiquePmedian(coords, stations, affect)
-end
-
-function pMedian_metaHeuristiqueGlouton(p)
-    print("\n")
-
-    coords, minX, maxX, minY, maxY = initCoordN()
-    # println("Coordonnées (x, y) de chaque ville extraite du fichier 'att48.tsp', représentant 48 états des Etats Unis : \n$coords\n")
-
-    stations = defStationsGlouton(p, coords, minX, maxX, minY, maxY)
-    coutAvant = coutPmedian(coords, stations)
-    
-
-    stations, coutApres = applicationStochastique(p, coords, stations)
-    # println("Liste des ièmes Etats choisis pour avoir une station de metro/bus après améliorations par descente stochastique avec l'heuristique Gloutonne: \n$stations\n")
-    println("Définition des stations.")
-
-    affect = affecterMedians(coords, stations)
-    #println("Affectation des autres Etats à la station la plus proche. Affect[i] = j signifie que l'Etat i est affecté à la station de l'Etat j : \n$affect\n")
-    println("Affectation des autres Etats à la station la plus proche.")
-
-    println("Cout de la solution (à minimiser) avant et après descente stochastique :\nCout avant, heuristique Gloutonne : $coutAvant\nCout après, heuristique Gloutonne améliorée : $coutApres")
-
-    interfaceGraphhiquePmedian(coords, stations, affect)
-end
-
-
-function pMedian_heuristiqueRandomisee(p, nbEssais=1)
-    print("\n")
-    
-    coords, = initCoordN()
-    # println("Coordonnées (x, y) de chaque ville extraite du fichier 'att48.tsp', représentant 48 états des Etats Unis : \n$coords\n")
-
-    stations = meilleureSolution(p, coords, nbEssais)
-    #println("Liste des ièmes Etats choisis aléatoirement pour avoir une station de metro/bus après $nbEssais essais d'améliorations : \n$stations\n")
-    println("Définition des stations.")
-
-    affect = affecterMedians(coords, stations)
-    # println("Affectation des autres Etats à la station la plus proche. Affect[i] = j signifie que l'Etat i est affecté à la station de l'Etat j : \n$affect\n")
-    println("Affectation des autres Etats à la station la plus proche.")
-
-    println("Calcul du coût de la solution...")
-    cout = coutPmedian(coords, stations)
-    println("Cout de la solution (à minimiser) : $cout")
-
-    interfaceGraphhiquePmedian(coords, stations, affect)
-
-end
-
-function pMedian_metaHeuristiqueRandom(p,nbEssais=50)
-    print("\n")
-
-    coords, = initCoordN()
-    # println("Coordonnées (x, y) de chaque ville extraite du fichier 'att48.tsp', représentant 48 états des Etats Unis : \n$coords\n")
-
-    stations, cout = iterationsStochastiqueRandom(p, coords, nbEssais)
-    #println("Liste des ièmes Etats choisis aléatoirement pour avoir une station de metro/bus après $nbEssais essais d'améliorations : \n$stations\n")
-    println("Définition des stations.")
-
-    affect = affecterMedians(coords, stations)
-    # println("Affectation des autres Etats à la station la plus proche. Affect[i] = j signifie que l'Etat i est affecté à la station de l'Etat j : \n$affect\n")
-    println("Affectation des autres Etats à la station la plus proche.")
-
-    println("Calcul du coût de la solution...")
-
-    println("Cout de la solution (à minimiser) : $cout")
-
-    interfaceGraphhiquePmedian(coords, stations, affect)
-
-end
-
-
-function pMedian_plneCompacte(p)
-    coords, = initCoordN()
-    nbEtats = length(coords)
-    d = initMatriceDistance(coords, nbEtats)
-    
-    m = Model(GLPK.Optimizer)
-    @variable(m, y[1:nbEtats, 1:nbEtats], Bin)
-
-    @objective(m, Min, sum(d[i, j]*y[i, j] for i in 1:nbEtats,j in 1:nbEtats))
-    
-    @constraint(m, sum(y[i, i] for i in 1:nbEtats) == p)
-    @constraint(m, [i=1:nbEtats] ,sum(y[i, j] for j in 1:nbEtats) == 1)
-    @constraint(m, [i=1:nbEtats, j=1:nbEtats] , y[i, j] <= y[j, j])
-    @constraint(m, y[1, 1] == 1)    # On force le point 1 à être une station
-
-    optimize!(m)
-
-    status = termination_status(m)
-    stations = Int[]
-    affect = Vector{Int}(undef, nbEtats)
-    cout = Inf
-
-    if status == INFEASIBLE
-        println("Le problème n'est pas réalisable")
-    elseif status == UNBOUNDED
-        println("Le problème est non borné")
-    elseif status == OPTIMAL
-        stations = Int[]
-        affect = Vector{Int}(undef, nbEtats)
-
-        for i in 1:nbEtats
-            if value(y[i, i]) > 0.9
-                push!(stations, i)
-            end
-        end
-        for i in 1:nbEtats
-            for j in 1:nbEtats
-                if value(y[i, j]) > 0.9
-                    affect[i] = j 
-                    break       # On a trouvé sa station affectée, on passe au point suivant.
-                end
-            end
-        end
-
-        # println("Liste des ièmes Etats choisis pour avoir une station de metro/bus via résolution d'un PLNE compacte : \n$stations\n")
-        # println("Affectation des autres Etats à la station la plus proche. Affect[i] = j signifie que l'Etat i est affecté à la station de l'Etat j : \n$affect\n")
-        # println("Calcul du coût de la solution...")
-        cout = objective_value(m)
-        # println("Cout de la solution (à minimiser) : $cout")
-        # interfaceGraphhiquePmedian(coords, stations, affect)
-        
-    end
-    return coords, stations, affect, cout
-end
 
 
 ################################### Fonctions pour glouton ###############################################
@@ -378,7 +193,7 @@ function trierStations(stations, coords, p)
     return stations
 end
 
-# Si il n'y a pas assez de stations, on comble par ordre croissant avec les premiers Etats qui ne sont pas des stations (pas fou, choix aléatoire)
+# Si il n'y a pas assez de stations, on comble par ordre croissant avec les premiers Etats qui ne sont pas des stations (pas fou)
 function comblerStations(stations, nbEtats, p)
     
     for i in 1:nbEtats
@@ -501,6 +316,62 @@ end
 ############################################# Fonctions pour PLNE Compacte ############################################
 
 # Initialise une matrice de distance séparant chaque villes. 
+
+function pMedian_plneCompacte(p)
+    coords, = initCoordN()
+    nbEtats = length(coords)
+    d = initMatriceDistance(coords, nbEtats)
+    
+    m = Model(GLPK.Optimizer)
+    @variable(m, y[1:nbEtats, 1:nbEtats], Bin)
+
+    @objective(m, Min, sum(d[i, j]*y[i, j] for i in 1:nbEtats,j in 1:nbEtats))
+    
+    @constraint(m, sum(y[i, i] for i in 1:nbEtats) == p)
+    @constraint(m, [i=1:nbEtats] ,sum(y[i, j] for j in 1:nbEtats) == 1)
+    @constraint(m, [i=1:nbEtats, j=1:nbEtats] , y[i, j] <= y[j, j])
+    @constraint(m, y[1, 1] == 1)    # On force le point 1 à être une station
+
+    optimize!(m)
+
+    status = termination_status(m)
+    stations = Int[]
+    affect = Vector{Int}(undef, nbEtats)
+    cout = Inf
+
+    if status == INFEASIBLE
+        println("Le problème n'est pas réalisable")
+    elseif status == UNBOUNDED
+        println("Le problème est non borné")
+    elseif status == OPTIMAL
+        stations = Int[]
+        affect = Vector{Int}(undef, nbEtats)
+
+        for i in 1:nbEtats
+            if value(y[i, i]) > 0.9
+                push!(stations, i)
+            end
+        end
+        for i in 1:nbEtats
+            for j in 1:nbEtats
+                if value(y[i, j]) > 0.9
+                    affect[i] = j 
+                    break       # On a trouvé sa station affectée, on passe au point suivant.
+                end
+            end
+        end
+
+        # println("Liste des ièmes Etats choisis pour avoir une station de metro/bus via résolution d'un PLNE compacte : \n$stations\n")
+        # println("Affectation des autres Etats à la station la plus proche. Affect[i] = j signifie que l'Etat i est affecté à la station de l'Etat j : \n$affect\n")
+        # println("Calcul du coût de la solution...")
+        cout = objective_value(m)
+        # println("Cout de la solution (à minimiser) : $cout")
+        # interfaceGraphhiquePmedian(coords, stations, affect)
+        
+    end
+    return coords, stations, affect, cout
+end
+
 function initMatriceDistance(coords, nbEtats)
     d = Matrix{Float64}(undef, nbEtats, nbEtats)
     for i in 1:nbEtats

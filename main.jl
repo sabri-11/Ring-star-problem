@@ -15,9 +15,10 @@ function main()
     coords, = initCoordN()
     nbEtats = length(coords)
 
-    open("historique.txt", "w") do f
-        write(f, "historique des tests réalisés : \n\n")
-    end
+    f = open("historique.txt", "w")
+    write(f, "historique des tests réalisés : \n\n")
+    flush(f)
+    run(`xdg-open historique.txt`)
 
     texte(nbEtats)
     while true
@@ -30,7 +31,9 @@ function main()
 
         p = defNbStations(nbEtats)
         stations, affect, ordreDeVisite, cout, temps = executionProgramme(p, choixCycle, choixMethode)
-        remplirHistorique(choixCycle, choixMethode, p, cout, temps)
+        # println(f, "stations : $stations de coord : $([coords[i] for i in stations])")
+        # println(f, "ordre de visite : $ordreDeVisite")
+        remplirHistorique(f, choixCycle, choixMethode, p, cout, temps)
         interfaceGraphhique_anneauEtoile(coords, stations, affect, ordreDeVisite, cout)
     end
 end
@@ -135,8 +138,6 @@ function choix1(p, choixCycle)
     temps = res.time
     stations, affect, ordreDeVisite, cout = res.value
     return stations, affect, ordreDeVisite, cout, temps
-    
-
 end
 
 function choix2(p, choixCycle)
@@ -231,7 +232,7 @@ function defNbEssais()
 
 end
 
-function remplirHistorique(choixCycle, choixMethode, p, cout, temps)
+function remplirHistorique(f, choixCycle, choixMethode, p, cout, temps)
     if choixMethode == 1
         methodePmedian = "heuristique gloutonne"
 
@@ -249,45 +250,47 @@ function remplirHistorique(choixCycle, choixMethode, p, cout, temps)
                 
         # Cas PLNE Compacte
     elseif choixMethode == 5
-        methodePmedian = "programme linéaire"
+        methodePmedian = "PL"
 
     elseif choixMethode == 6
-        methodePmedian = "programme linéaire"
-        methodeCycle = "programme linéaire"
+        methodePmedian = "PL"
+        methodeCycle = "PL"
     end
 
     if choixCycle == 1
         methodeCycle = "plus proche voisin"
     elseif choixCycle == 2
-        methodeCycle = "plus proche voisin améliorée"
+        methodeCycle = "plus proche voisin 2 opt"
     end
 
 
     # On remplit le fichier historique.txt et on affiche les résultats sur le terminal
-    open("historique.txt", "a") do f
-        println("Test de solution : ")
-        println(f, "Test de solution : ")
-
-        println("Nombre de stations à placer : $p")
-        println(f, "Nombre de stations à placer : $p")
-
-        println("Méthode p-Médian choisie : $methodePmedian")
-        println(f, "Méthode p-Médian choisie : $methodePmedian")
-
-        println("Méthode TSP choisie : $methodeCycle")
-        println(f, "Méthode TSP choisie : $methodeCycle")
     
-        println("Coût de la solution : $(round(cout, digits=2))")
-        println(f, "Coût de la solution : $(round(cout, digits=2))")
-        
-        println("Temps d'exécution : $temps")
-        println(f, "Temps d'exécution : $temps")
+    println("Test de solution : ")
+    println(f, "Test de solution : ")
 
-        println()
-        println(f)
-        println("------------------------------------")
-        println(f, "------------------------------------")
-        println()
-        println(f)
-    end
+    println("Nombre de stations à placer : $p")
+    println(f, "Nombre de stations à placer : $p")
+
+    println("Méthode p-Médian choisie : $methodePmedian")
+    println(f, "Méthode p-Médian choisie : $methodePmedian")
+
+    println("Méthode TSP choisie : $methodeCycle")
+    println(f, "Méthode TSP choisie : $methodeCycle")
+
+    println("Coût de la solution (à minimiser) : $(round(cout, digits=2))")
+    println(f, "Coût de la solution : $(round(cout, digits=2))")
+    
+    println("Temps d'exécution : $temps")
+    println(f, "Temps d'exécution : $temps")
+
+    println()
+    println(f)
+    println("------------------------------------")
+    println(f, "------------------------------------")
+    println()
+    println(f)
+
+    flush(f)
+    
 end

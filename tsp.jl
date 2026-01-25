@@ -22,8 +22,6 @@ function coutTsp(coords, ordreDeVisite)
 end
 
 
-
-
 # Algorithme du plus proche voisin pour construire un cycle passant par toutes les stations 
 function plusProcheVoisin(coords, stations)
     ordreDeVisite = Int[]
