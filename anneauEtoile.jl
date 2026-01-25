@@ -194,7 +194,8 @@ function ae_plne(p)
     end 
 
     m = Model(GLPK.Optimizer)
-    set_time_limit_sec(m, 60.0)
+    tMax = 60.0     # temps max pour trouver une solution (en s)
+    set_time_limit_sec(m, tMax)
 
     @variable(m, y[1:nbEtats, 1:nbEtats], Bin)      # yii = 1 si p est une station et yij = 1 si la ville i est affectée à la station j
     @variable(m, x[1:nbEtats, 1:nbEtats], Bin)      # x représente les arrêtes, il y a autant d'arrête que de stations. xij = 1 si i et j sont des stations reliées par une arrête
@@ -242,7 +243,7 @@ function ae_plne(p)
         println("Le problème est non borné")
     elseif status == OPTIMAL || (status == TIME_LIMIT && has_values(m))
         if status == TIME_LIMIT
-            println("1 minutes écoulées, affichage de la solution non optimale trouvée :")
+            println("$(tMax)s se sont écoulées, affichage de la meilleure solution non optimale trouvée : \n")
         end
         resolution(p, x, y, stations, affect, ordreDeVisite, nbEtats)
         cout = objective_value(m)

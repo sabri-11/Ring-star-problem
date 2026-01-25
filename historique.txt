@@ -1,29 +1,11 @@
 historique des tests réalisés : 
 
 Test de solution : 
-Nombre de stations à placer : 5
-Méthode p-Médian choisie : programme linéaire
-Méthode TSP choisie : programme linéaire
-Coût de la solution : 55444.97
-Temps d'exécution : 60.338494762
-
-------------------------------------
-
-Test de solution : 
-Nombre de stations à placer : 5
-Méthode p-Médian choisie : programme linéaire
+Nombre de stations à placer : 10
+Méthode p-Médian choisie : heuristique gloutonne
 Méthode TSP choisie : plus proche voisin 2 opt
-Coût de la solution : 56220.04
-Temps d'exécution : 0.0099998
-
-------------------------------------
-
-Test de solution : 
-Nombre de stations à placer : 4
-Méthode p-Médian choisie : programme linéaire
-Méthode TSP choisie : plus proche voisin 2 opt
-Coût de la solution : 61464.91
-Temps d'exécution : 0.011999778
+Coût de la solution : 48833.89
+Temps d'exécution : 0.000199984
 
 ------------------------------------
 

@@ -22,6 +22,10 @@ function main()
 
     texte(nbEtats)
     while true
+        q = pressEnter()
+        if q == "q"
+            return
+        end
         choixMethode = choixPMedian()
         if choixMethode != 6
             choixCycle = choixTsp()
@@ -50,6 +54,16 @@ function texte(nbEtats)
     println("Nous nous intéressons à la résolution du problème de l'anneau étoile avec une instance de $nbEtats Etats des Etats Unis. Nous voulons construire des arrêts de métro/bus dans p Etats de manière à minimiser les distances à parcourir à pieds pour les citoyens puis tracer un cycle reliant toute les stations et de distance minimale. Ce sera à vous de choisir le nombre p de stations à construire sachant qu'il ne peut y avoir qu'un maximum de 1 station par Etat\n")
     println("Nous avons donc implémenté plusieurs manières, plus ou moins bonnes pour résoudre ce problème. Pour ce qui est de la définition des stations, nous avons une méthode Gloutonne, une méthode aléatoire ainsi qu'une résolution avec un programme linéaire donnant nécessairement la meilleure solution. Nous avons également deux méta-heuristiques améliorant les solutions aléatoires et gloutonnes en les répétant un certains nombres de fois et ne gardant que la meilleure solution.")
     println("\nPour ce qui est du tracé du cycle reliant toutes les stations entre elles, nous avons 3 méthodes : \n-La méthode du plus proche voisin, qui part de la première station et construit un cycle de station proche en proche.\n-Une amélioration de ce même algorithme par une méthode itérative, empêchant les croisements d'arrêtes.\n-Une résolution par programme linéaire donnant nécessairement la meilleure solution\n\n")
+end
+
+function pressEnter()
+    println("(Appuyez sur 'entrée' pour continuer ou 'q' pour quitter...)")
+    while ((c=readline()) != "")    # le \n est supprimer par readline, quand on fait entrée, il renvoie une chaîne vide ""
+        if c == "q"
+            return c
+        end
+        println("(Appuyez sur 'entrée' ou pour continuer ou 'q' pour quitter...)")
+    end
 end
 
 function choixTsp()
