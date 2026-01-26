@@ -15,15 +15,18 @@ function initCoordN()
     maxY = -Inf
     minY = Inf
     b = false
-    for l in eachline("att48.tsp")
-        # On veut sortir de la boucle quand on a fini dfe lire la section NODE_COORD_SECTION, et c'est TOUR_SECTION qui vient juste après
-        if l == "TOUR_SECTION"  
+    for ligne in eachline("att48.tsp")
+        println(ligne)
+        l = strip(ligne)    # Pas forcément necéssaire, mais nettoie la ligne au cas ou elle prends un \n à la fin
+        println(l)
+        # On veut sortir de la boucle quand on a fini dfe lire la section NODE_COORD_SECTION, et c'est TOUR_SECTION ou EOF qui vient juste après en fonction du type de fichier
+        if l == "TOUR_SECTION" || l == "EOF"
             break
         end
 
         # On veut commencer à lire quand on entre dans la section NODE_COORD_SECTION, on place donc un booléen à vrai.
-        # Si on commençait à lire dès que était vrai il lisait la ligne NODE_COORD_SECTION or on veut lire à partir de la prochaine ligne, on fait donc continuer pour faire un tour de boucle en plus.
-        if l == "NODE_COORD_SECTION"
+        # Si on commençait à lire dès que était vrai il lisait la ligne NODE_COORD_SECTION or on veut lire à partir de la prochaine ligne, on fait donc continue pour faire un tour de boucle en plus.
+        if l == "NODE_COORD_SECTION" 
             b = true
             continue
         end
@@ -163,6 +166,7 @@ function trierStations(stations, coords, p)
     return stations
 end
  =#
+
 
 # On regroupe par paires de stations les plus proches et on en supprime une des 2
 function trierStations(stations, coords, p)

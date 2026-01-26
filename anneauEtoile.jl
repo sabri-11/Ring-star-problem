@@ -14,7 +14,7 @@ function interfaceGraphhique_anneauEtoile(coords, stations, affect, ordreDeVisit
         color = :blue, 
         markersize=3.5,
         legend = :outertopright,
-        title = "Visualisation Tsp Anneau etoile.\nCout solution (à min) : $(round(cout, digits=2))",
+        title = "Visualisation problème Anneau etoile.\nCoût sol (à minimiser) : $(round(cout, digits=2))",
         xlabel = "X", ylabel = "Y",
         aspect_ratio = :equal   # force les axes x et y à avoir la même échelle
     )
@@ -54,7 +54,7 @@ function interfaceGraphhique_anneauEtoile(coords, stations, affect, ordreDeVisit
         (x, y) = coords[s]
         annotate!(p, x, y+150, text(string(k), 10, :black, :bottom))
     end
-    
+
     display(p)
 end
 
