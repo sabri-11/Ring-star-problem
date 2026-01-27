@@ -184,9 +184,9 @@ function choix3(p, fichier, choixCycle)
     nbEssais = defNbEssais()
     
     if choixCycle == 1
-        res = @timed ae_ppv_random(p, fichier)
+        res = @timed ae_ppv_random(p, fichier, nbEssais)
     elseif choixCycle == 2
-        res = @timed ae_ppv2opt_random(p, fichier)
+        res = @timed ae_ppv2opt_random(p, fichier, nbEssais)
     end
     temps = res.time
     stations, affect, ordreDeVisite, cout = res.value
