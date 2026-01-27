@@ -12,7 +12,8 @@ const UNBOUNDED = JuMP.MOI.DUAL_INFEASIBLE;
 
 
 function main()
-    fichier = choixFichier()
+    # fichier = choixFichier()
+    fichier = "att48.tsp"
     coords, = initCoordN(fichier)
     nbEtats = length(coords)
 

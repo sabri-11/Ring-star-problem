@@ -43,8 +43,8 @@ function interfaceGraphhique_anneauEtoile(coords, stations, affect, ordreDeVisit
     # On retire le dernier point (doublon de fermeture) pour ne pas afficher deux fois l'étoile
     scatter!(p, cycleX[1:end-1], cycleY[1:end-1], 
         color = :red, 
-        markersize = 9, 
-        marker = :star5, 
+        markersize = 5, 
+        marker = :utriangle, 
         label = "Stations"
     )
 
