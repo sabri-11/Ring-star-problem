@@ -12,7 +12,9 @@ const UNBOUNDED = JuMP.MOI.DUAL_INFEASIBLE;
 
 
 function main()
-    coords, = initCoordN()
+    # fichier = choixFichier()
+    fichier = "att48.tsp"
+    coords, = initCoordN(fichier)
     nbEtats = length(coords)
 
     f = open("historique.txt", "w")
@@ -26,6 +28,9 @@ function main()
         if q == "q"
             return
         end
+
+        
+
         choixMethode = choixPMedian()
         if choixMethode != 6
             choixCycle = choixTsp()
@@ -34,7 +39,7 @@ function main()
         end
 
         p = defNbStations(nbEtats)
-        stations, affect, ordreDeVisite, cout, temps = executionProgramme(p, choixCycle, choixMethode)
+        stations, affect, ordreDeVisite, cout, temps = executionProgramme(p, fichier, choixCycle, choixMethode)
         # println(f, "stations : $stations de coord : $([coords[i] for i in stations])")
         # println(f, "ordre de visite : $ordreDeVisite")
         remplirHistorique(f, choixCycle, choixMethode, p, cout, temps)
@@ -64,6 +69,13 @@ function pressEnter()
         end
         println("(Appuyez sur 'entrée' ou pour continuer ou 'q' pour quitter...)")
     end
+end
+
+function choixFichier()
+    print("Entrez le nom exact du fichier sur lequel vous voulez travailler : ")
+    entree = readline()
+    println()
+    return entree
 end
 
 function choixTsp()
@@ -110,55 +122,55 @@ function choixPMedian()
     
 end
 
-function executionProgramme(p, choixCycle, choixMethode)
+function executionProgramme(p, fichier, choixCycle, choixMethode)
     # cas Glouton
     if choixMethode == 1
-        stations, affect, ordreDeVisite, cout, temps = choix1(p, choixCycle)
+        stations, affect, ordreDeVisite, cout, temps = choix1(p, fichier, choixCycle)
         return stations, affect, ordreDeVisite, cout, temps
 
         # Cas glouton amélioré
     elseif choixMethode == 2
-        stations, affect, ordreDeVisite, cout, temps = choix2(p, choixCycle)
+        stations, affect, ordreDeVisite, cout, temps = choix2(p, fichier, choixCycle)
         return stations, affect, ordreDeVisite, cout, temps
 
         # Cas Random
     elseif choixMethode == 3
-        stations, affect, ordreDeVisite, cout, temps = choix3(p, choixCycle)
+        stations, affect, ordreDeVisite, cout, temps = choix3(p, fichier, choixCycle)
         return stations, affect, ordreDeVisite, cout, temps
     
         # Cas Random amélioré
     elseif choixMethode == 4
-        stations, affect, ordreDeVisite, cout, temps = choix4(p, choixCycle)
+        stations, affect, ordreDeVisite, cout, temps = choix4(p, fichier, choixCycle)
         return stations, affect, ordreDeVisite, cout, temps
 
         # Cas PLNE Compacte pour p médian
     elseif choixMethode == 5
-        stations, affect, ordreDeVisite, cout, temps = choix5(p, choixCycle)
+        stations, affect, ordreDeVisite, cout, temps = choix5(p, fichier, choixCycle)
         return stations, affect, ordreDeVisite, cout, temps
 
         # Cas Plne pour résolution complète
     elseif choixMethode == 6
-        stations, affect, ordreDeVisite, cout, temps = choix6(p)
+        stations, affect, ordreDeVisite, cout, temps = choix6(p, fichier)
     end
 end
 
-function choix1(p, choixCycle)
+function choix1(p, fichier, choixCycle)
     
     if choixCycle == 1
-        res = @timed ae_ppv_glouton(p)
+        res = @timed ae_ppv_glouton(p, fichier)
     elseif choixCycle == 2
-        res = @timed ae_ppv2opt_glouton(p)
+        res = @timed ae_ppv2opt_glouton(p, fichier)
     end
     temps = res.time
     stations, affect, ordreDeVisite, cout = res.value
     return stations, affect, ordreDeVisite, cout, temps
 end
 
-function choix2(p, choixCycle)
+function choix2(p, fichier, choixCycle)
     if choixCycle == 1
-        res = @timed ae_ppv_metaHeuristiqueGlouton(p)
+        res = @timed ae_ppv_metaHeuristiqueGlouton(p, fichier)
     elseif choixCycle == 2
-        res = @timed ae_ppv2opt_metaHeuristiqueGlouton(p)
+        res = @timed ae_ppv2opt_metaHeuristiqueGlouton(p, fichier)
     end
     temps = res.time
     stations, affect, ordreDeVisite, cout = res.value
@@ -166,15 +178,15 @@ function choix2(p, choixCycle)
 
 end
 
-function choix3(p, choixCycle)
+function choix3(p, fichier, choixCycle)
     println("Choisissez le nombres d'essais alétatoires que vous voulez effectuer : ")
     print("\rNb essais aléatoires : ")
     nbEssais = defNbEssais()
     
     if choixCycle == 1
-        res = @timed ae_ppv_random(p)
+        res = @timed ae_ppv_random(p, fichier, nbEssais)
     elseif choixCycle == 2
-        res = @timed ae_ppv2opt_random(p)
+        res = @timed ae_ppv2opt_random(p, fichier, nbEssais)
     end
     temps = res.time
     stations, affect, ordreDeVisite, cout = res.value
@@ -182,15 +194,15 @@ function choix3(p, choixCycle)
 
 end
 
-function choix4(p, choixCycle)
+function choix4(p, fichier, choixCycle)
     println("Choisissez le nombres d'itérations d'amélioration par descente stochastique sur une heuristique alétatoire que vous voulez effectuer (100 recommandées) : ")
     print("\rNb essais itérations descente stochastique : ")
     nbEssais = defNbEssais()
 
     if choixCycle == 1
-        res = @timed ae_ppv_metaHeuristiqueRandom(p, nbEssais)
+        res = @timed ae_ppv_metaHeuristiqueRandom(p, fichier, nbEssais)
     elseif choixCycle == 2
-        res = @timed ae_ppv2opt_metaHeuristiqueRandom(p, nbEssais)
+        res = @timed ae_ppv2opt_metaHeuristiqueRandom(p, fichier, nbEssais)
     end
     temps = res.time
     stations, affect, ordreDeVisite, cout = res.value
@@ -198,19 +210,19 @@ function choix4(p, choixCycle)
 
 end
 
-function choix5(p, choixCycle)
+function choix5(p, fichier, choixCycle)
     if choixCycle == 1
-        res = @timed ae_ppv_plne(p)
+        res = @timed ae_ppv_plne(p, fichier)
     elseif choixCycle == 2
-        res = @timed ae_ppv2opt_plne(p)
+        res = @timed ae_ppv2opt_plne(p, fichier)
     end
     temps = res.time
     stations, affect, ordreDeVisite, cout = res.value
     return stations, affect, ordreDeVisite, cout, temps
 end
 
-function choix6(p)
-    res = @timed ae_plne(p)
+function choix6(p, fichier)
+    res = @timed ae_plne(p, fichier)
     temps = res.time
     stations, affect, ordreDeVisite, cout = res.value
     return stations, affect, ordreDeVisite, cout, temps

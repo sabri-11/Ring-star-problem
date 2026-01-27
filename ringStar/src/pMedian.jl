@@ -8,17 +8,18 @@ using Plots
 
 ################################### Fonctions pour glouton ###############################################
 
-function initCoordN()
+function initCoordN(fichier)
     coords = Vector{Tuple{Float64, Float64}}()
     minX = Inf
     maxX = -Inf
     maxY = -Inf
     minY = Inf
     b = false
-    for ligne in eachline("att48.tsp")
-        println(ligne)
+
+    for ligne in eachline(fichier)
+        # println(ligne)
         l = strip(ligne)    # Pas forcément necéssaire, mais nettoie la ligne au cas ou elle prends un \n à la fin
-        println(l)
+        # println(l)
         # On veut sortir de la boucle quand on a fini dfe lire la section NODE_COORD_SECTION, et c'est TOUR_SECTION ou EOF qui vient juste après en fonction du type de fichier
         if l == "TOUR_SECTION" || l == "EOF"
             break
@@ -321,8 +322,8 @@ end
 
 # Initialise une matrice de distance séparant chaque villes. 
 
-function pMedian_plneCompacte(p)
-    coords, = initCoordN()
+function pMedian_plneCompacte(p, fichier)
+    coords, = initCoordN(fichier)
     nbEtats = length(coords)
     d = initMatriceDistance(coords, nbEtats)
     
