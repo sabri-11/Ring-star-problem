@@ -1,0 +1,29 @@
+historique des tests réalisés : 
+
+Test de solution : 
+Nombre de stations à placer : 4
+Méthode p-Médian choisie : PL
+Méthode TSP choisie : PL
+Coût de la solution : 59932.7
+Temps d'exécution : 9.826974578
+
+------------------------------------
+
+Test de solution : 
+Nombre de stations à placer : 15
+Méthode p-Médian choisie : PL
+Méthode TSP choisie : plus proche voisin 2 opt
+Coût de la solution : 41079.78
+Temps d'exécution : 0.0
+
+------------------------------------
+
+Test de solution : 
+Nombre de stations à placer : 15
+Méthode p-Médian choisie : PL
+Méthode TSP choisie : PL
+Coût de la solution : 47883.63
+Temps d'exécution : 61.902837534
+
+------------------------------------
+
