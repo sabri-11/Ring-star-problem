@@ -64,9 +64,9 @@ end
 ######################################## Fonctions principales de résolutions ##############################
 
 # Anneau etoile plus proche voisin glouton
-function ae_ppv_glouton(p)
+function ae_ppv_glouton(p, fichier)
 
-    coords, minX, maxX, minY, maxY = initCoordN()
+    coords, minX, maxX, minY, maxY = initCoordN(fichier)
 
     stations = defStationsGlouton(p, coords, minX, maxX, minY, maxY)
 
@@ -77,8 +77,8 @@ function ae_ppv_glouton(p)
     return stations, affect, ordreDeVisite, cout
 end
 
-function ae_ppv_random(p, nbEssais=1)
-    coords, = initCoordN()
+function ae_ppv_random(p, fichier, nbEssais=1)
+    coords, = initCoordN(fichier)
 
     stations = meilleureSolution(p, coords, nbEssais)
 
@@ -89,8 +89,8 @@ function ae_ppv_random(p, nbEssais=1)
     return stations, affect, ordreDeVisite, cout
 end
 
-function ae_ppv_metaHeuristiqueGlouton(p)
-    coords, minX, maxX, minY, maxY = initCoordN()
+function ae_ppv_metaHeuristiqueGlouton(p, fichier)
+    coords, minX, maxX, minY, maxY = initCoordN(fichier)
 
     stations = defStationsGlouton(p, coords, minX, maxX, minY, maxY)
     stations, cout_pMedian = applicationStochastique(p, coords, stations)
@@ -102,8 +102,8 @@ function ae_ppv_metaHeuristiqueGlouton(p)
     return stations, affect, ordreDeVisite, cout
 end
 
-function ae_ppv_metaHeuristiqueRandom(p, nbEssais=50)
-    coords, = initCoordN()
+function ae_ppv_metaHeuristiqueRandom(p, fichier, nbEssais=50)
+    coords, = initCoordN(fichier)
 
     stations, cout_pMedian = iterationsStochastiqueRandom(p, coords, nbEssais)
 
@@ -114,8 +114,8 @@ function ae_ppv_metaHeuristiqueRandom(p, nbEssais=50)
     return stations, affect, ordreDeVisite, cout
 end
 
-function ae_ppv_plne(p)
-    coords, stations, affect, cout_pMedian = pMedian_plneCompacte(p)
+function ae_ppv_plne(p, fichier)
+    coords, stations, affect, cout_pMedian = pMedian_plneCompacte(p, fichier)
     ordreDeVisite = plusProcheVoisin(coords, stations)
     cout = cout_pMedian + coutTsp(coords, ordreDeVisite)
 
@@ -123,8 +123,8 @@ function ae_ppv_plne(p)
 end
 
 #### plus proche voisin amélioré
-function ae_ppv2opt_glouton(p)
-    coords, minX, maxX, minY, maxY = initCoordN()
+function ae_ppv2opt_glouton(p, fichier)
+    coords, minX, maxX, minY, maxY = initCoordN(fichier)
 
     stations = defStationsGlouton(p, coords, minX, maxX, minY, maxY)
 
@@ -135,8 +135,8 @@ function ae_ppv2opt_glouton(p)
     return stations, affect, ordreDeVisite, cout
 end
 
-function ae_ppv2opt_random(p, nbEssais=1)
-    coords, = initCoordN()
+function ae_ppv2opt_random(p, fichier, nbEssais=1)
+    coords, = initCoordN(fichier)
 
     stations = meilleureSolution(p, coords, nbEssais)
 
@@ -146,8 +146,8 @@ function ae_ppv2opt_random(p, nbEssais=1)
     return stations, affect, ordreDeVisite, cout
 end
 
-function ae_ppv2opt_metaHeuristiqueGlouton(p)
-    coords, minX, maxX, minY, maxY = initCoordN()
+function ae_ppv2opt_metaHeuristiqueGlouton(p, fichier)
+    coords, minX, maxX, minY, maxY = initCoordN(fichier)
 
     stations = defStationsGlouton(p, coords, minX, maxX, minY, maxY)
     stations, cout_pMedian = applicationStochastique(p, coords, stations)
@@ -158,8 +158,8 @@ function ae_ppv2opt_metaHeuristiqueGlouton(p)
     return stations, affect, ordreDeVisite, cout
 end
 
-function ae_ppv2opt_metaHeuristiqueRandom(p, nbEssais=50)
-    coords, = initCoordN()
+function ae_ppv2opt_metaHeuristiqueRandom(p, fichier, nbEssais=50)
+    coords, = initCoordN(fichier)
 
     stations, cout_pMedian = iterationsStochastiqueRandom(p, coords, nbEssais)
 
@@ -169,8 +169,8 @@ function ae_ppv2opt_metaHeuristiqueRandom(p, nbEssais=50)
     return stations, affect, ordreDeVisite, cout
 end
 
-function ae_ppv2opt_plne(p)
-    coords, stations, affect, cout_pMedian = pMedian_plneCompacte(p)
+function ae_ppv2opt_plne(p, fichier)
+    coords, stations, affect, cout_pMedian = pMedian_plneCompacte(p, fichier)
     ordreDeVisite = plusProcheVoisin_2opt(coords, stations)
     cout = cout_pMedian + coutTsp(coords, ordreDeVisite)
     return stations, affect, ordreDeVisite, cout
@@ -178,8 +178,8 @@ end
 
 #### plne compacte
 
-function ae_plne(p)
-    coords, = initCoordN()
+function ae_plne(p, fichier)
+    coords, = initCoordN(fichier)
     nbEtats = length(coords)   
     d = initMatriceDistance(coords, nbEtats)
 
