@@ -7,7 +7,7 @@ using Plots
 
 #################################### Lecture du fichier att48.tsp ######################################
 
-function initCoordN()
+function initCoordN(chemin)
     coords = Vector{Tuple{Float64, Float64}}()
     minX = Inf
     maxX = -Inf
@@ -15,9 +15,8 @@ function initCoordN()
     minY = Inf
     b = false
 
-    fichier = "../tspFile/att48.tsp"
 
-    for ligne in eachline(fichier)
+    for ligne in eachline(chemin)
         l = strip(ligne)    # Pas forcément necéssaire, mais nettoie la ligne au cas ou elle prends un \n à la fin
         
         # On veut sortir de la boucle quand on a fini dfe lire la section NODE_COORD_SECTION, et c'est TOUR_SECTION ou EOF qui vient juste après en fonction du type de fichier
@@ -296,8 +295,8 @@ end
 
 # Initialise une matrice de distance séparant chaque villes. 
 
-function pMedian_plneCompacte(p)
-    coords, = initCoordN()
+function pMedian_plneCompacte(p, chemin)
+    coords, = initCoordN(chemin)
     nbEtats = length(coords)
     d = initMatriceDistance(coords, nbEtats)
     
@@ -362,3 +361,5 @@ function initMatriceDistance(coords, nbEtats)
     end
     return d
 end
+
+

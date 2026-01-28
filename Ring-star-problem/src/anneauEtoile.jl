@@ -11,7 +11,7 @@ function interfaceGraphhique_anneauEtoile(coords, stations, affect, ordreDeVisit
      # Créer un nuage de points 
     p = scatter(allX, allY, 
         label="Villes", 
-        color = :blue, 
+        color = :black, 
         markersize=3.5,
         legend = :outertopright,
         title = "Visualisation problème Anneau etoile.\nCoût sol (à minimiser) : $(round(cout, digits=2))",
@@ -43,16 +43,19 @@ function interfaceGraphhique_anneauEtoile(coords, stations, affect, ordreDeVisit
     # On retire le dernier point (doublon de fermeture) pour ne pas afficher deux fois l'étoile
     scatter!(p, cycleX[1:end-1], cycleY[1:end-1], 
         color = :red, 
-        markersize = 9, 
-        marker = :star5, 
+        markersize = 5, 
+        marker = :utriangle, 
         label = "Stations"
     )
 
     
     # On annote directement dans la boucle 
+    hauteur = maximum(allY) - minimum(allY)
+    decalageY = hauteur*0.04
+
     for (k, s) in enumerate(ordreDeVisite)  # enumerate permet d'associer le couple (k, s) avec s la valeur dans la liste ordreDeVisite et k l'indice de la liste
         (x, y) = coords[s]
-        annotate!(p, x, y+150, text(string(k), 10, :black, :bottom))
+        annotate!(p, x, y+decalageY, text(string(k), 10, :black, :bottom))
     end
 
     display(p)
@@ -64,9 +67,9 @@ end
 ######################################## Fonctions principales de résolutions ##############################
 
 # Anneau etoile plus proche voisin glouton
-function ae_ppv_glouton(p)
+function ae_ppv_glouton(p, chemin)
 
-    coords, minX, maxX, minY, maxY = initCoordN()
+    coords, minX, maxX, minY, maxY = initCoordN(chemin)
 
     stations = defStationsGlouton(p, coords, minX, maxX, minY, maxY)
 
@@ -77,8 +80,8 @@ function ae_ppv_glouton(p)
     return stations, affect, ordreDeVisite, cout
 end
 
-function ae_ppv_random(p, nbEssais)
-    coords, = initCoordN()
+function ae_ppv_random(p, chemin, nbEssais)
+    coords, = initCoordN(chemin)
 
     stations = meilleureSolution(p, coords, nbEssais)
 
@@ -89,8 +92,8 @@ function ae_ppv_random(p, nbEssais)
     return stations, affect, ordreDeVisite, cout
 end
 
-function ae_ppv_metaHeuristiqueGlouton(p)
-    coords, minX, maxX, minY, maxY = initCoordN()
+function ae_ppv_metaHeuristiqueGlouton(p, chemin)
+    coords, minX, maxX, minY, maxY = initCoordN(chemin)
 
     stations = defStationsGlouton(p, coords, minX, maxX, minY, maxY)
     stations, cout_pMedian = applicationStochastique(p, coords, stations)
@@ -102,8 +105,8 @@ function ae_ppv_metaHeuristiqueGlouton(p)
     return stations, affect, ordreDeVisite, cout
 end
 
-function ae_ppv_metaHeuristiqueRandom(p, nbEssais)
-    coords, = initCoordN()
+function ae_ppv_metaHeuristiqueRandom(p, chemin, nbEssais)
+    coords, = initCoordN(chemin)
 
     stations, cout_pMedian = iterationsStochastiqueRandom(p, coords, nbEssais)
 
@@ -114,8 +117,8 @@ function ae_ppv_metaHeuristiqueRandom(p, nbEssais)
     return stations, affect, ordreDeVisite, cout
 end
 
-function ae_ppv_plne(p)
-    coords, stations, affect, cout_pMedian = pMedian_plneCompacte(p)
+function ae_ppv_plne(p, chemin)
+    coords, stations, affect, cout_pMedian = pMedian_plneCompacte(p, chemin)
     ordreDeVisite = plusProcheVoisin(coords, stations)
     cout = cout_pMedian + coutTsp(coords, ordreDeVisite)
 
@@ -123,9 +126,8 @@ function ae_ppv_plne(p)
 end
 
 #### plus proche voisin amélioré
-function ae_ppv2opt_glouton(p)
-    coords, minX, maxX, minY, maxY = initCoordN()
-
+function ae_ppv2opt_glouton(p, chemin)
+    coords, minX, maxX, minY, maxY = initCoordN(chemin)
     stations = defStationsGlouton(p, coords, minX, maxX, minY, maxY)
 
     affect = affecterMedians(coords, stations)
@@ -135,8 +137,8 @@ function ae_ppv2opt_glouton(p)
     return stations, affect, ordreDeVisite, cout
 end
 
-function ae_ppv2opt_random(p, nbEssais)
-    coords, = initCoordN()
+function ae_ppv2opt_random(p, chemin, nbEssais)
+    coords, = initCoordN(chemin)
 
     stations = meilleureSolution(p, coords, nbEssais)
 
@@ -146,8 +148,8 @@ function ae_ppv2opt_random(p, nbEssais)
     return stations, affect, ordreDeVisite, cout
 end
 
-function ae_ppv2opt_metaHeuristiqueGlouton(p)
-    coords, minX, maxX, minY, maxY = initCoordN()
+function ae_ppv2opt_metaHeuristiqueGlouton(p, chemin)
+    coords, minX, maxX, minY, maxY = initCoordN(chemin)
 
     stations = defStationsGlouton(p, coords, minX, maxX, minY, maxY)
     stations, cout_pMedian = applicationStochastique(p, coords, stations)
@@ -158,8 +160,8 @@ function ae_ppv2opt_metaHeuristiqueGlouton(p)
     return stations, affect, ordreDeVisite, cout
 end
 
-function ae_ppv2opt_metaHeuristiqueRandom(p, nbEssais)
-    coords, = initCoordN()
+function ae_ppv2opt_metaHeuristiqueRandom(p, chemin, nbEssais)
+    coords, = initCoordN(chemin)
 
     stations, cout_pMedian = iterationsStochastiqueRandom(p, coords, nbEssais)
 
@@ -169,8 +171,8 @@ function ae_ppv2opt_metaHeuristiqueRandom(p, nbEssais)
     return stations, affect, ordreDeVisite, cout
 end
 
-function ae_ppv2opt_plne(p)
-    coords, stations, affect, cout_pMedian = pMedian_plneCompacte(p)
+function ae_ppv2opt_plne(p, chemin)
+    coords, stations, affect, cout_pMedian = pMedian_plneCompacte(p, chemin)
     ordreDeVisite = plusProcheVoisin_2opt(coords, stations)
     cout = cout_pMedian + coutTsp(coords, ordreDeVisite)
     return stations, affect, ordreDeVisite, cout
@@ -178,8 +180,8 @@ end
 
 #### plne compacte
 
-function ae_plne(p)
-    coords, = initCoordN()
+function ae_plne(p, chemin)
+    coords, = initCoordN(chemin)
     nbEtats = length(coords)   
     d = initMatriceDistance(coords, nbEtats)
 
@@ -298,3 +300,5 @@ function resolution(p, x, y, stations, affect, ordreDeVisite, nbEtats)
         end
     end
 end
+
+

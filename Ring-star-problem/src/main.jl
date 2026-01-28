@@ -12,33 +12,39 @@ const UNBOUNDED = JuMP.MOI.DUAL_INFEASIBLE;
 
 
 function main()
-    coords, = initCoordN()
-    nbEtats = length(coords)
+    # fichier = choixFichier()
+    # chemin = joinpath("..", "tspFile", fichier)
+    chemin = "../tspFile/att48.tsp"
 
+    coords, = initCoordN(chemin)
+    nbEtats = length(coords)
+    
     f = open("../txtFile/historique.txt", "w")
     write(f, "historique des tests réalisés : \n\n")
-    flush(f)
-    run(`xdg-open ../txtFile/historique.txt`)
+    
+    run(`xdg-open ../txtFile/historique.txt`)  # ouvre le fichier historique.txt automatiquement
     
     texte(nbEtats)
     while true
         q = pressEnter()
         if q == "q"
+            close(f)
             return
         end
         choixMethode = choixPMedian()
         if choixMethode != 6
             choixCycle = choixTsp()
         else
-            choixCycle = 0
+            choixCycle = -1
         end
 
         p = defNbStations(nbEtats)
-        stations, affect, ordreDeVisite, cout, temps = executionProgramme(p, choixCycle, choixMethode)
+        stations, affect, ordreDeVisite, cout, temps, nbEssais = executionProgramme(p, chemin, choixCycle, choixMethode)
         # println(f, "stations : $stations de coord : $([coords[i] for i in stations])")
         # println(f, "ordre de visite : $ordreDeVisite")
-        remplirHistorique(f, choixCycle, choixMethode, p, cout, temps)
         interfaceGraphhique_anneauEtoile(coords, stations, affect, ordreDeVisite, cout)
+        remplirHistorique(f, choixCycle, choixMethode, p, cout, temps, nbEssais)
+        
     end
 end
 
@@ -51,7 +57,7 @@ end
 function texte(nbEtats)
     
     print("\n")
-    println("Nous nous intéressons à la résolution du problème de l'anneau étoile avec une instance de $nbEtats Etats des Etats Unis. Nous voulons construire des arrêts de métro/bus dans p Etats de manière à minimiser les distances à parcourir à pieds pour les citoyens puis tracer un cycle reliant toute les stations et de distance minimale. Ce sera à vous de choisir le nombre p de stations à construire sachant qu'il ne peut y avoir qu'un maximum de 1 station par Etat\n")
+    println("Nous nous intéressons à la résolution du problème de l'anneau étoile avec une instance de $nbEtats points donnés. Nous voulons construire des arrêts de métro/bus dans p Etats de manière à minimiser les distances à parcourir à pieds pour les citoyens puis tracer un cycle reliant toute les stations et de distance minimale. Ce sera à vous de choisir le nombre p de stations à construire sachant qu'il ne peut y avoir qu'un maximum de 1 station par Etat\n")
     println("Nous avons donc implémenté plusieurs manières, plus ou moins bonnes pour résoudre ce problème. Pour ce qui est de la définition des stations, nous avons une méthode Gloutonne, une méthode aléatoire ainsi qu'une résolution avec un programme linéaire donnant nécessairement la meilleure solution. Nous avons également deux métaheuristiques améliorant les solutions aléatoires et gloutonnes en les répétant un certains nombres de fois et ne gardant que la meilleure solution.")
     println("\nPour ce qui est du tracé du cycle reliant toutes les stations entre elles, nous avons 3 méthodes : \n-La méthode du plus proche voisin, qui part de la première station et construit un cycle de station proche en proche.\n-Une amélioration de ce même algorithme par une méthode itérative, empêchant les croisements d'arrêtes.\n-Une résolution par programme linéaire donnant nécessairement la meilleure solution\n\n")
 end
@@ -64,6 +70,16 @@ function pressEnter()
         end
         println("(Appuyez sur 'entrée' ou pour continuer ou 'q' pour quitter...)")
     end
+end
+
+function choixFichier()
+    print("Entrez le nom exact du fichier tsp à utiliser (ex : att48.tsp) : ")
+    entree = readline()
+    while entree == ""
+        print("Entrez un nom de fichier : ")
+        entree = readline()
+    end
+    return entree
 end
 
 function choixTsp()
@@ -110,55 +126,56 @@ function choixPMedian()
     
 end
 
-function executionProgramme(p, choixCycle, choixMethode)
+function executionProgramme(p, chemin, choixCycle, choixMethode)
     # cas Glouton
     if choixMethode == 1
-        stations, affect, ordreDeVisite, cout, temps = choix1(p, choixCycle)
-        return stations, affect, ordreDeVisite, cout, temps
+        stations, affect, ordreDeVisite, cout, temps = choix1(p, chemin, choixCycle)
+        return stations, affect, ordreDeVisite, cout, temps, -1
 
         # Cas glouton amélioré
     elseif choixMethode == 2
-        stations, affect, ordreDeVisite, cout, temps = choix2(p, choixCycle)
-        return stations, affect, ordreDeVisite, cout, temps
+        stations, affect, ordreDeVisite, cout, temps = choix2(p, chemin, choixCycle)
+        return stations, affect, ordreDeVisite, cout, temps, -1
 
         # Cas Random
     elseif choixMethode == 3
-        stations, affect, ordreDeVisite, cout, temps = choix3(p, choixCycle)
-        return stations, affect, ordreDeVisite, cout, temps
+        stations, affect, ordreDeVisite, cout, temps, nbEssais = choix3(p, chemin, choixCycle)
+        return stations, affect, ordreDeVisite, cout, temps, nbEssais
     
         # Cas Random amélioré
     elseif choixMethode == 4
-        stations, affect, ordreDeVisite, cout, temps = choix4(p, choixCycle)
-        return stations, affect, ordreDeVisite, cout, temps
+        stations, affect, ordreDeVisite, cout, temps, nbEssais = choix4(p, chemin, choixCycle)
+        return stations, affect, ordreDeVisite, cout, temps, nbEssais
 
         # Cas PLNE Compacte pour p médian
     elseif choixMethode == 5
-        stations, affect, ordreDeVisite, cout, temps = choix5(p, choixCycle)
-        return stations, affect, ordreDeVisite, cout, temps
+        stations, affect, ordreDeVisite, cout, temps = choix5(p, chemin, choixCycle)
+        return stations, affect, ordreDeVisite, cout, temps, -1
 
         # Cas Plne pour résolution complète
     elseif choixMethode == 6
-        stations, affect, ordreDeVisite, cout, temps = choix6(p)
+        stations, affect, ordreDeVisite, cout, temps = choix6(p, chemin)
+        return stations, affect, ordreDeVisite, cout, temps, -1
     end
 end
 
-function choix1(p, choixCycle)
+function choix1(p, chemin, choixCycle)
     
     if choixCycle == 1
-        res = @timed ae_ppv_glouton(p)
+        res = @timed ae_ppv_glouton(p, chemin)
     elseif choixCycle == 2
-        res = @timed ae_ppv2opt_glouton(p)
+        res = @timed ae_ppv2opt_glouton(p, chemin)
     end
     temps = res.time
     stations, affect, ordreDeVisite, cout = res.value
     return stations, affect, ordreDeVisite, cout, temps
 end
 
-function choix2(p, choixCycle)
+function choix2(p, chemin, choixCycle)
     if choixCycle == 1
-        res = @timed ae_ppv_metaHeuristiqueGlouton(p)
+        res = @timed ae_ppv_metaHeuristiqueGlouton(p, chemin)
     elseif choixCycle == 2
-        res = @timed ae_ppv2opt_metaHeuristiqueGlouton(p)
+        res = @timed ae_ppv2opt_metaHeuristiqueGlouton(p, chemin)
     end
     temps = res.time
     stations, affect, ordreDeVisite, cout = res.value
@@ -166,51 +183,51 @@ function choix2(p, choixCycle)
 
 end
 
-function choix3(p, choixCycle)
+function choix3(p, chemin, choixCycle)
     println("Choisissez le nombres d'essais alétatoires que vous voulez effectuer : ")
     print("\rNb essais aléatoires : ")
     nbEssais = defNbEssais()
     
     if choixCycle == 1
-        res = @timed ae_ppv_random(p)
+        res = @timed ae_ppv_random(p, chemin, nbEssais)
     elseif choixCycle == 2
-        res = @timed ae_ppv2opt_random(p)
+        res = @timed ae_ppv2opt_random(p, chemin, nbEssais)
     end
     temps = res.time
     stations, affect, ordreDeVisite, cout = res.value
-    return stations, affect, ordreDeVisite, cout, temps
+    return stations, affect, ordreDeVisite, cout, temps, nbEssais
 
 end
 
-function choix4(p, choixCycle)
+function choix4(p, chemin, choixCycle)
     println("Choisissez le nombres d'itérations d'amélioration de votre heuristique alétatoire à effectuer (100 recommandées) : ")
     print("\rNb essais itérations descente stochastique : ")
     nbEssais = defNbEssais()
 
     if choixCycle == 1
-        res = @timed ae_ppv_metaHeuristiqueRandom(p, nbEssais)
+        res = @timed ae_ppv_metaHeuristiqueRandom(p, chemin, nbEssais)
     elseif choixCycle == 2
-        res = @timed ae_ppv2opt_metaHeuristiqueRandom(p, nbEssais)
+        res = @timed ae_ppv2opt_metaHeuristiqueRandom(p, chemin, nbEssais)
     end
     temps = res.time
     stations, affect, ordreDeVisite, cout = res.value
-    return stations, affect, ordreDeVisite, cout, temps
+    return stations, affect, ordreDeVisite, cout, temps, nbEssais
 
 end
 
-function choix5(p, choixCycle)
+function choix5(p, chemin, choixCycle)
     if choixCycle == 1
-        res = @timed ae_ppv_plne(p)
+        res = @timed ae_ppv_plne(p, chemin)
     elseif choixCycle == 2
-        res = @timed ae_ppv2opt_plne(p)
+        res = @timed ae_ppv2opt_plne(p, chemin)
     end
     temps = res.time
     stations, affect, ordreDeVisite, cout = res.value
     return stations, affect, ordreDeVisite, cout, temps
 end
 
-function choix6(p)
-    res = @timed ae_plne(p)
+function choix6(p, chemin)
+    res = @timed ae_plne(p, chemin)
     temps = res.time
     stations, affect, ordreDeVisite, cout = res.value
     return stations, affect, ordreDeVisite, cout, temps
@@ -246,7 +263,7 @@ function defNbEssais()
 
 end
 
-function remplirHistorique(f, choixCycle, choixMethode, p, cout, temps)
+function remplirHistorique(f, choixCycle, choixMethode, p, cout, temps, nbEssais)
     if choixMethode == 1
         methodePmedian = "heuristique gloutonne"
 
@@ -256,7 +273,7 @@ function remplirHistorique(f, choixCycle, choixMethode, p, cout, temps)
 
         # Cas Random
     elseif choixMethode == 3
-        methodePmedian = "heuristique random répétée un certain nombre de fois"
+        methodePmedian = "heuristique random"
     
         # Cas Random amélioré
     elseif choixMethode == 4
@@ -288,6 +305,11 @@ function remplirHistorique(f, choixCycle, choixMethode, p, cout, temps)
 
     println("Méthode p-Médian choisie : $methodePmedian")
     println(f, "Méthode p-Médian choisie : $methodePmedian")
+
+    if nbEssais != -1
+        println("Nombre d'essais effectués : $nbEssais")
+        println(f, "Nombre d'essais effectués : $nbEssais")
+    end
 
     println("Méthode TSP choisie : $methodeCycle")
     println(f, "Méthode TSP choisie : $methodeCycle")
