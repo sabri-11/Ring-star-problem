@@ -254,14 +254,14 @@ function applicationStochastique(p, coords, stations)
     end
 
     nbEtats = length(coords)  
-    cpt = nbEtats    # On fixe notre compteur arbitrairement en fct du nb d'Etats que l'on a
+    cpt = 2*nbEtats    # On fixe notre compteur arbitrairement en fct du nb d'Etats que l'on a
     cout = coutPmedian(coords, stations)
     
     while cpt > 0       
         stationsTest = swapStation(stations, nbEtats)   # On fait un échange entre une stations et un Etats n'ayant pas de stations
         coutTest = coutPmedian(coords, stationsTest)   # On calcule le coût de cette nouvelle solution 
         if coutTest < cout  # On va affecter cette nouvelles liste de stations si elle est une meilleure solution.
-            cpt = nbEtats
+            cpt = 2*nbEtats
             stations = stationsTest
             cout = coutTest
         else
