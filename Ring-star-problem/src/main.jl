@@ -34,16 +34,18 @@ function main()
         choixMethode = choixPMedian()
         if choixMethode != 6
             choixCycle = choixTsp()
+            alpha = choixAlpha()
         else
+            alpha = choixAlpha()
             choixCycle = -1
         end
 
         p = defNbStations(nbEtats)
-        stations, affect, ordreDeVisite, cout, temps, nbEssais = executionProgramme(p, chemin, choixCycle, choixMethode)
+        stations, affect, ordreDeVisite, cout, temps, nbEssais = executionProgramme(p, chemin, choixCycle, choixMethode, alpha)
         # println(f, "stations : $stations de coord : $([coords[i] for i in stations])")
         # println(f, "ordre de visite : $ordreDeVisite")
         interfaceGraphhique_anneauEtoile(coords, stations, affect, ordreDeVisite, cout)
-        remplirHistorique(f, choixCycle, choixMethode, p, cout, temps, nbEssais)
+        remplirHistorique(f, choixCycle, choixMethode, p, cout, temps, nbEssais, alpha)
         
     end
 end
@@ -97,6 +99,22 @@ function choixTsp()
     
 end
 
+function choixAlpha()
+    println("Vous pouvez pondéré le coût total du cycle du TSP par un coefficient compris entre 0 et 10, 0 correspondant à la solution du p-médian et 10 le coût du TSP est multiplié par 10.")
+    
+    while true
+        print("Alpha : ")
+        entree = tryparse(Int, readline())
+        if !isnothing(entree) && (entree >= 0 && entree <= 10)
+            return entree
+        else
+            println("Mauvaise entrée, réessayez.")
+        end
+    
+    end
+
+end
+
 
 function choixPMedian()
 
@@ -126,56 +144,56 @@ function choixPMedian()
     
 end
 
-function executionProgramme(p, chemin, choixCycle, choixMethode)
+function executionProgramme(p, chemin, choixCycle, choixMethode, alpha)
     # cas Glouton
     if choixMethode == 1
-        stations, affect, ordreDeVisite, cout, temps = choix1(p, chemin, choixCycle)
+        stations, affect, ordreDeVisite, cout, temps = choix1(p, chemin, choixCycle, alpha)
         return stations, affect, ordreDeVisite, cout, temps, -1
 
         # Cas glouton amélioré
     elseif choixMethode == 2
-        stations, affect, ordreDeVisite, cout, temps = choix2(p, chemin, choixCycle)
+        stations, affect, ordreDeVisite, cout, temps = choix2(p, chemin, choixCycle, alpha)
         return stations, affect, ordreDeVisite, cout, temps, -1
 
         # Cas Random
     elseif choixMethode == 3
-        stations, affect, ordreDeVisite, cout, temps, nbEssais = choix3(p, chemin, choixCycle)
+        stations, affect, ordreDeVisite, cout, temps, nbEssais = choix3(p, chemin, choixCycle, alpha)
         return stations, affect, ordreDeVisite, cout, temps, nbEssais
     
         # Cas Random amélioré
     elseif choixMethode == 4
-        stations, affect, ordreDeVisite, cout, temps, nbEssais = choix4(p, chemin, choixCycle)
+        stations, affect, ordreDeVisite, cout, temps, nbEssais = choix4(p, chemin, choixCycle, alpha)
         return stations, affect, ordreDeVisite, cout, temps, nbEssais
 
         # Cas PLNE Compacte pour p médian
     elseif choixMethode == 5
-        stations, affect, ordreDeVisite, cout, temps = choix5(p, chemin, choixCycle)
+        stations, affect, ordreDeVisite, cout, temps = choix5(p, chemin, choixCycle, alpha)
         return stations, affect, ordreDeVisite, cout, temps, -1
 
         # Cas Plne pour résolution complète
     elseif choixMethode == 6
-        stations, affect, ordreDeVisite, cout, temps = choix6(p, chemin)
+        stations, affect, ordreDeVisite, cout, temps = choix6(p, chemin, alpha)
         return stations, affect, ordreDeVisite, cout, temps, -1
     end
 end
 
-function choix1(p, chemin, choixCycle)
+function choix1(p, chemin, choixCycle, alpha)
     
     if choixCycle == 1
-        res = @timed ae_ppv_glouton(p, chemin)
+        res = @timed ae_ppv_glouton(p, chemin, alpha)
     elseif choixCycle == 2
-        res = @timed ae_ppv2opt_glouton(p, chemin)
+        res = @timed ae_ppv2opt_glouton(p, chemin, alpha)
     end
     temps = res.time
     stations, affect, ordreDeVisite, cout = res.value
     return stations, affect, ordreDeVisite, cout, temps
 end
 
-function choix2(p, chemin, choixCycle)
+function choix2(p, chemin, choixCycle, alpha)
     if choixCycle == 1
-        res = @timed ae_ppv_metaHeuristiqueGlouton(p, chemin)
+        res = @timed ae_ppv_metaHeuristiqueGlouton(p, chemin, alpha)
     elseif choixCycle == 2
-        res = @timed ae_ppv2opt_metaHeuristiqueGlouton(p, chemin)
+        res = @timed ae_ppv2opt_metaHeuristiqueGlouton(p, chemin, alpha)
     end
     temps = res.time
     stations, affect, ordreDeVisite, cout = res.value
@@ -183,15 +201,15 @@ function choix2(p, chemin, choixCycle)
 
 end
 
-function choix3(p, chemin, choixCycle)
+function choix3(p, chemin, choixCycle, alpha)
     println("Choisissez le nombres d'essais alétatoires que vous voulez effectuer : ")
     print("\rNb essais aléatoires : ")
     nbEssais = defNbEssais()
     
     if choixCycle == 1
-        res = @timed ae_ppv_random(p, chemin, nbEssais)
+        res = @timed ae_ppv_random(p, chemin, nbEssais, alpha)
     elseif choixCycle == 2
-        res = @timed ae_ppv2opt_random(p, chemin, nbEssais)
+        res = @timed ae_ppv2opt_random(p, chemin, nbEssais, alpha)
     end
     temps = res.time
     stations, affect, ordreDeVisite, cout = res.value
@@ -199,15 +217,15 @@ function choix3(p, chemin, choixCycle)
 
 end
 
-function choix4(p, chemin, choixCycle)
+function choix4(p, chemin, choixCycle, alpha)
     println("Choisissez le nombres d'itérations d'amélioration de votre heuristique alétatoire à effectuer (100 recommandées) : ")
     print("\rNb essais itérations descente stochastique : ")
     nbEssais = defNbEssais()
 
     if choixCycle == 1
-        res = @timed ae_ppv_metaHeuristiqueRandom(p, chemin, nbEssais)
+        res = @timed ae_ppv_metaHeuristiqueRandom(p, chemin, nbEssais, alpha)
     elseif choixCycle == 2
-        res = @timed ae_ppv2opt_metaHeuristiqueRandom(p, chemin, nbEssais)
+        res = @timed ae_ppv2opt_metaHeuristiqueRandom(p, chemin, nbEssais, alpha)
     end
     temps = res.time
     stations, affect, ordreDeVisite, cout = res.value
@@ -215,19 +233,19 @@ function choix4(p, chemin, choixCycle)
 
 end
 
-function choix5(p, chemin, choixCycle)
+function choix5(p, chemin, choixCycle, alpha)
     if choixCycle == 1
-        res = @timed ae_ppv_plne(p, chemin)
+        res = @timed ae_ppv_plne(p, chemin, alpha)
     elseif choixCycle == 2
-        res = @timed ae_ppv2opt_plne(p, chemin)
+        res = @timed ae_ppv2opt_plne(p, chemin, alpha)
     end
     temps = res.time
     stations, affect, ordreDeVisite, cout = res.value
     return stations, affect, ordreDeVisite, cout, temps
 end
 
-function choix6(p, chemin)
-    res = @timed ae_plne(p, chemin)
+function choix6(p, chemin, alpha)
+    res = @timed ae_plne(p, chemin, alpha)
     temps = res.time
     stations, affect, ordreDeVisite, cout = res.value
     return stations, affect, ordreDeVisite, cout, temps
@@ -263,7 +281,7 @@ function defNbEssais()
 
 end
 
-function remplirHistorique(f, choixCycle, choixMethode, p, cout, temps, nbEssais)
+function remplirHistorique(f, choixCycle, choixMethode, p, cout, temps, nbEssais, alpha)
     if choixMethode == 1
         methodePmedian = "heuristique gloutonne"
 
@@ -313,6 +331,9 @@ function remplirHistorique(f, choixCycle, choixMethode, p, cout, temps, nbEssais
 
     println("Méthode TSP choisie : $methodeCycle")
     println(f, "Méthode TSP choisie : $methodeCycle")
+
+    println("Alpha = $alpha")
+    println(f, "Alpha = $alpha")
 
     println("Coût de la solution (à minimiser) : $(round(cout, digits=2))")
     println(f, "Coût de la solution : $(round(cout, digits=2))")

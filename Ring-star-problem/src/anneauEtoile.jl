@@ -67,7 +67,7 @@ end
 ######################################## Fonctions principales de résolutions ##############################
 
 # Anneau etoile plus proche voisin glouton
-function ae_ppv_glouton(p, chemin)
+function ae_ppv_glouton(p, chemin, alpha)
 
     coords, minX, maxX, minY, maxY = initCoordN(chemin)
 
@@ -75,24 +75,24 @@ function ae_ppv_glouton(p, chemin)
 
     affect = affecterMedians(coords, stations)
     ordreDeVisite = plusProcheVoisin(coords, stations)
-    cout = coutPmedian(coords, stations) + coutTsp(coords, ordreDeVisite)
+    cout = coutPmedian(coords, stations) + coutTsp(coords, ordreDeVisite, alpha)
     
     return stations, affect, ordreDeVisite, cout
 end
 
-function ae_ppv_random(p, chemin, nbEssais)
+function ae_ppv_random(p, chemin, nbEssais, alpha)
     coords, = initCoordN(chemin)
 
     stations = meilleureSolution(p, coords, nbEssais)
 
     affect = affecterMedians(coords, stations)
     ordreDeVisite = plusProcheVoisin(coords, stations)
-    cout = coutPmedian(coords, stations) + coutTsp(coords, ordreDeVisite)
+    cout = coutPmedian(coords, stations) + coutTsp(coords, ordreDeVisite, alpha)
 
     return stations, affect, ordreDeVisite, cout
 end
 
-function ae_ppv_metaHeuristiqueGlouton(p, chemin)
+function ae_ppv_metaHeuristiqueGlouton(p, chemin, alpha)
     coords, minX, maxX, minY, maxY = initCoordN(chemin)
 
     stations = defStationsGlouton(p, coords, minX, maxX, minY, maxY)
@@ -100,55 +100,55 @@ function ae_ppv_metaHeuristiqueGlouton(p, chemin)
 
     affect = affecterMedians(coords, stations)
     ordreDeVisite = plusProcheVoisin(coords, stations)
-    cout = cout_pMedian + coutTsp(coords, ordreDeVisite)
+    cout = cout_pMedian + coutTsp(coords, ordreDeVisite, alpha)
 
     return stations, affect, ordreDeVisite, cout
 end
 
-function ae_ppv_metaHeuristiqueRandom(p, chemin, nbEssais)
+function ae_ppv_metaHeuristiqueRandom(p, chemin, nbEssais, alpha)
     coords, = initCoordN(chemin)
 
     stations, cout_pMedian = iterationsStochastiqueRandom(p, coords, nbEssais)
 
     affect = affecterMedians(coords, stations)
     ordreDeVisite = plusProcheVoisin(coords, stations)
-    cout = cout_pMedian + coutTsp(coords, ordreDeVisite)
+    cout = cout_pMedian + coutTsp(coords, ordreDeVisite, alpha)
 
     return stations, affect, ordreDeVisite, cout
 end
 
-function ae_ppv_plne(p, chemin)
+function ae_ppv_plne(p, chemin, alpha)
     coords, stations, affect, cout_pMedian = pMedian_plneCompacte(p, chemin)
     ordreDeVisite = plusProcheVoisin(coords, stations)
-    cout = cout_pMedian + coutTsp(coords, ordreDeVisite)
+    cout = cout_pMedian + coutTsp(coords, ordreDeVisite, alpha)
 
     return stations, affect, ordreDeVisite, cout
 end
 
 #### plus proche voisin amélioré
-function ae_ppv2opt_glouton(p, chemin)
+function ae_ppv2opt_glouton(p, chemin, alpha)
     coords, minX, maxX, minY, maxY = initCoordN(chemin)
     stations = defStationsGlouton(p, coords, minX, maxX, minY, maxY)
 
     affect = affecterMedians(coords, stations)
     ordreDeVisite = plusProcheVoisin_2opt(coords, stations)
-    cout = coutPmedian(coords, stations) + coutTsp(coords, ordreDeVisite)
+    cout = coutPmedian(coords, stations) + coutTsp(coords, ordreDeVisite, alpha)
 
     return stations, affect, ordreDeVisite, cout
 end
 
-function ae_ppv2opt_random(p, chemin, nbEssais)
+function ae_ppv2opt_random(p, chemin, nbEssais, alpha)
     coords, = initCoordN(chemin)
 
     stations = meilleureSolution(p, coords, nbEssais)
 
     affect = affecterMedians(coords, stations)
     ordreDeVisite = plusProcheVoisin_2opt(coords, stations)
-    cout = coutPmedian(coords, stations) + coutTsp(coords, ordreDeVisite)
+    cout = coutPmedian(coords, stations) + coutTsp(coords, ordreDeVisite, alpha)
     return stations, affect, ordreDeVisite, cout
 end
 
-function ae_ppv2opt_metaHeuristiqueGlouton(p, chemin)
+function ae_ppv2opt_metaHeuristiqueGlouton(p, chemin, alpha)
     coords, minX, maxX, minY, maxY = initCoordN(chemin)
 
     stations = defStationsGlouton(p, coords, minX, maxX, minY, maxY)
@@ -156,31 +156,31 @@ function ae_ppv2opt_metaHeuristiqueGlouton(p, chemin)
 
     affect = affecterMedians(coords, stations)
     ordreDeVisite = plusProcheVoisin_2opt(coords, stations)
-    cout = cout_pMedian + coutTsp(coords, ordreDeVisite)
+    cout = cout_pMedian + coutTsp(coords, ordreDeVisite, alpha)
     return stations, affect, ordreDeVisite, cout
 end
 
-function ae_ppv2opt_metaHeuristiqueRandom(p, chemin, nbEssais)
+function ae_ppv2opt_metaHeuristiqueRandom(p, chemin, nbEssais, alpha)
     coords, = initCoordN(chemin)
 
     stations, cout_pMedian = iterationsStochastiqueRandom(p, coords, nbEssais)
 
     affect = affecterMedians(coords, stations)
     ordreDeVisite = plusProcheVoisin_2opt(coords, stations)
-    cout = cout_pMedian + coutTsp(coords, ordreDeVisite)
+    cout = cout_pMedian + coutTsp(coords, ordreDeVisite, alpha)
     return stations, affect, ordreDeVisite, cout
 end
 
-function ae_ppv2opt_plne(p, chemin)
+function ae_ppv2opt_plne(p, chemin, alpha)
     coords, stations, affect, cout_pMedian = pMedian_plneCompacte(p, chemin)
     ordreDeVisite = plusProcheVoisin_2opt(coords, stations)
-    cout = cout_pMedian + coutTsp(coords, ordreDeVisite)
+    cout = cout_pMedian + coutTsp(coords, ordreDeVisite, alpha)
     return stations, affect, ordreDeVisite, cout
 end
 
 #### plne compacte
 
-function ae_plne(p, chemin)
+function ae_plne(p, chemin, alpha)
     coords, = initCoordN(chemin)
     nbEtats = length(coords)   
     d = initMatriceDistance(coords, nbEtats)
@@ -195,15 +195,17 @@ function ae_plne(p, chemin)
         return uneStation(affect, nbEtats, d)
     end 
 
-    m = Model(GLPK.Optimizer)
-    tMax = 60.0     # temps max pour trouver une solution (en s)
+    m = Model(CPLEX.Optimizer)
+    # m = Model(GLPLK.Optimizer)
+    set_silent(m)
+    tMax = 600.0     # temps max pour trouver une solution (en s)
     set_time_limit_sec(m, tMax)
 
     @variable(m, y[1:nbEtats, 1:nbEtats], Bin)      # yii = 1 si p est une station et yij = 1 si la ville i est affectée à la station j
     @variable(m, x[1:nbEtats, 1:nbEtats], Bin)      # x représente les arrêtes, il y a autant d'arrête que de stations. xij = 1 si i et j sont des stations reliées par une arrête
     @variable(m, 0 <= z[1:nbEtats, 1:nbEtats] <= p-1, Int)
 
-    @objective( m,  Min, sum(d[i, j]*x[i, j] for i in 1:nbEtats, j in 1:nbEtats) + sum(d[i, j]*y[i, j] for i in 1:nbEtats, j in 1:nbEtats) )
+    @objective( m,  Min, alpha*sum(d[i, j]*x[i, j] for i in 1:nbEtats, j in 1:nbEtats) + sum(d[i, j]*y[i, j] for i in 1:nbEtats, j in 1:nbEtats) )
 
 
     @constraint(m, sum(y[i, i] for i in 1:nbEtats) == p)    # cte (1)
@@ -245,7 +247,7 @@ function ae_plne(p, chemin)
         println("Le problème est non borné")
     elseif status == OPTIMAL || (status == TIME_LIMIT && has_values(m))
         if status == TIME_LIMIT
-            println("$(tMax)s se sont écoulées, affichage de la meilleure solution non optimale trouvée : \n")
+            println("$(tMax)s se sont écoulées, affichage de la meilleure solution trouvée : \n")
         end
         resolution(p, x, y, stations, affect, ordreDeVisite, nbEtats)
         cout = objective_value(m)
