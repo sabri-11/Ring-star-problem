@@ -351,3 +351,5 @@ function remplirHistorique(f, choixCycle, choixMethode, p, cout, temps, nbEssais
     flush(f)
     
 end
+
+
