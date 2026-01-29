@@ -1,84 +1,31 @@
 historique des tests réalisés : 
 
 Test de solution : 
-Nombre de stations à placer : 4
+Nombre de stations à placer : 15
 Méthode p-Médian choisie : heuristique gloutonne
 Méthode TSP choisie : plus proche voisin 2 opt
-Alpha = 0
-Coût de la solution : 63951.67
-Temps d'exécution : 0.000207624
+Coût de la solution : 42708.4
+Temps d'exécution : 0.0
 
 ------------------------------------
 
 Test de solution : 
-Nombre de stations à placer : 1
-Méthode p-Médian choisie : PL
-Méthode TSP choisie : plus proche voisin 2 opt
-Alpha = 4
-Coût de la solution : 136465.67
-Temps d'exécution : 2.742060782
-
-------------------------------------
-
-Test de solution : 
-Nombre de stations à placer : 4
-Méthode p-Médian choisie : PL
-Méthode TSP choisie : plus proche voisin 2 opt
-Alpha = 0
-Coût de la solution : 46316.39
-Temps d'exécution : 0.06161083
-
-------------------------------------
-
-Test de solution : 
-Nombre de stations à placer : 4
-Méthode p-Médian choisie : heuristique gloutonne
-Méthode TSP choisie : plus proche voisin 2 opt
-Alpha = 0
-Coût de la solution : 63951.67
-Temps d'exécution : 0.000202855
-
-------------------------------------
-
-Test de solution : 
-Nombre de stations à placer : 5
-Méthode p-Médian choisie : heuristique gloutonne
-Méthode TSP choisie : plus proche voisin 2 opt
-Alpha = 0
-Coût de la solution : 46849.42
-Temps d'exécution : 0.000229742
-
-------------------------------------
-
-Test de solution : 
-Nombre de stations à placer : 5
+Nombre de stations à placer : 10
 Méthode p-Médian choisie : heuristique random
-Nombre d'essais effectués : 100
-Méthode TSP choisie : plus proche voisin 2 opt
-Alpha = 0
-Coût de la solution : 43353.23
-Temps d'exécution : 0.000837988
+Nombre d'essais effectués : 1
+Méthode TSP choisie : plus proche voisin
+Coût de la solution : 50903.97
+Temps d'exécution : 0.0
 
 ------------------------------------
 
 Test de solution : 
-Nombre de stations à placer : 5
-Méthode p-Médian choisie : heuristique gloutonne
-Méthode TSP choisie : plus proche voisin 2 opt
-Alpha = 0
-Coût de la solution : 46849.42
-Temps d'exécution : 0.000200047
-
-------------------------------------
-
-Test de solution : 
-Nombre de stations à placer : 5
+Nombre de stations à placer : 10
 Méthode p-Médian choisie : heuristique random
-Nombre d'essais effectués : 100
-Méthode TSP choisie : plus proche voisin 2 opt
-Alpha = 0
-Coût de la solution : 42288.22
-Temps d'exécution : 0.000629574
+Nombre d'essais effectués : 1
+Méthode TSP choisie : plus proche voisin
+Coût de la solution : 54508.52
+Temps d'exécution : 0.0
 
 ------------------------------------
 
@@ -87,95 +34,8 @@ Nombre de stations à placer : 4
 Méthode p-Médian choisie : heuristique random
 Nombre d'essais effectués : 1
 Méthode TSP choisie : plus proche voisin
-Alpha = 1
-Coût de la solution : 69976.46
-Temps d'exécution : 0.000160042
-
-------------------------------------
-
-Test de solution : 
-Nombre de stations à placer : 4
-Méthode p-Médian choisie : heuristique random
-Nombre d'essais effectués : 1
-Méthode TSP choisie : plus proche voisin
-Alpha = 1
-Coût de la solution : 85595.08
-Temps d'exécution : 0.000230914
-
-------------------------------------
-
-Test de solution : 
-Nombre de stations à placer : 4
-Méthode p-Médian choisie : heuristique random
-Nombre d'essais effectués : 1
-Méthode TSP choisie : plus proche voisin
-Alpha = 1
-Coût de la solution : 82631.97
-Temps d'exécution : 0.000169886
-
-------------------------------------
-
-Test de solution : 
-Nombre de stations à placer : 15
-Méthode p-Médian choisie : heuristique gloutonne
-Méthode TSP choisie : plus proche voisin 2 opt
-Alpha = 0
-Coût de la solution : 21794.14
-Temps d'exécution : 0.000237224
-
-------------------------------------
-
-Test de solution : 
-Nombre de stations à placer : 15
-Méthode p-Médian choisie : heuristique random
-Nombre d'essais effectués : 100
-Méthode TSP choisie : plus proche voisin 2 opt
-Alpha = 0
-Coût de la solution : 21644.03
-Temps d'exécution : 0.00076202
-
-------------------------------------
-
-Test de solution : 
-Nombre de stations à placer : 15
-Méthode p-Médian choisie : métaheuristique random améliorée par descente stochastique
-Nombre d'essais effectués : 100
-Méthode TSP choisie : plus proche voisin 2 opt
-Alpha = 0
-Coût de la solution : 17007.6
-Temps d'exécution : 0.122634455
-
-------------------------------------
-
-Test de solution : 
-Nombre de stations à placer : 35
-Méthode p-Médian choisie : heuristique gloutonne
-Méthode TSP choisie : plus proche voisin 2 opt
-Alpha = 0
-Coût de la solution : 5307.77
-Temps d'exécution : 0.000401481
-
-------------------------------------
-
-Test de solution : 
-Nombre de stations à placer : 35
-Méthode p-Médian choisie : heuristique random
-Nombre d'essais effectués : 100
-Méthode TSP choisie : plus proche voisin 2 opt
-Alpha = 0
-Coût de la solution : 4635.13
-Temps d'exécution : 0.002296923
-
-------------------------------------
-
-Test de solution : 
-Nombre de stations à placer : 35
-Méthode p-Médian choisie : heuristique random
-Nombre d'essais effectués : 100
-Méthode TSP choisie : plus proche voisin 2 opt
-Alpha = 0
-Coût de la solution : 5167.55
-Temps d'exécution : 0.001403187
+Coût de la solution : 87264.89
+Temps d'exécution : 0.0
 
 ------------------------------------
 
