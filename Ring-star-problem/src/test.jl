@@ -24,9 +24,14 @@ function test_heuristiqueRandom100iter(p, nbTests)
     println("Coût moyen sur $nbTests tests pour p=$p: $(round(coutMoyen, digits=2))")
     println("Temps moyen sur $nbTests tests pour p=$p : $tempsMoyen")
 
+
 end
 
 
 function test_metaHeuristiqueGloutonne(p, nbTests)
+
+    println("Coût moyen : $(round(coutMoyen, digits=2))")
+    println("Temps moyen : $tempsMoyen")
+
 
 end
