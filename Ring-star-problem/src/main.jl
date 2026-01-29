@@ -85,7 +85,7 @@ function choixFichier()
 end
 
 function choixTsp()
-    println("Choisissez quelle méthode de tracé de cycle vous voulez utiliser, entrez : \n\t1 : Plus proche voisin\n\t2 : Plus proche voisin 2 opt")
+    println("Choisissez quelle méthode de tracé de cycle vous voulez utiliser, entrez : \n\t1 : Plus proche voisin\n\t2 : Plus proche voisin 2-OPT")
     while true
         print("\nVotre saisie : ")
         entree = tryparse(Int, readline())
@@ -120,9 +120,9 @@ function choixPMedian()
 
     println("\nChoisissez la méthode que vous souhaitez utiliser, entrez : \n
     1 : heuristique gloutonne
-    2 : heuristique gloutonne améliorée
+    2 : Méta-heuristique gloutonne
     3 : heuristique aléatoire
-    4 : heuristique aléatoire amélioréé
+    4 : Méta-heuristique aléatoire
     5 : p-médian par programme linéaire
     6 : résolution complète par programme linéaire")
 

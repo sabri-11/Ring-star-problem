@@ -4,33 +4,29 @@ include("anneauEtoile.jl")
 
 function test_heuristiqueRandom100iter(p, nbTests)
 
-    tabCout = Float32[]
-    tabTemps = Float32[]
-
-    for i in 1:nbTests
-        res = @timed ae_ppv2opt_random(p, "../tspFile/att48.tsp", 100, 0)
-        temps = res.time
-        stations, affect, ordreDeVisite, cout = res.value
-        push!(tabCout, cout)
-        push!(tabTemps, temps)
-    end
     coutMoyen = 0.0
     tempsMoyen = 0.0
 
-    for c in tabCout
-        coutMoyen += c
-    end
-    for t in tabTemps
-        tempsMoyen += t
+    for i in 1:nbTests
+        res = @timed ae_ppv_random(p, "../tspFile/att48.tsp", 100, 0)
+        temps = res.time
+        cout = res.value[4]
+        print("(cout$i=$cout, temps$i=$temps)\t")
+        coutMoyen += cout
+        tempsMoyen += temps
+        
     end
 
     coutMoyen /= nbTests
     tempsMoyen /= nbTests
     
-    println("Tous les couts : $tabCout")
-    println("Tous les temps : $tabTemps")
+    println()
+    println("Coût moyen sur $nbTests tests pour p=$p: $(round(coutMoyen, digits=2))")
+    println("Temps moyen sur $nbTests tests pour p=$p : $tempsMoyen")
 
-    println("Coût moyen : $coutMoyen")
-    println("Temps moyen : $tempsMoyen")
+end
+
+
+function test_metaHeuristiqueGloutonne(p, nbTests)
 
 end
