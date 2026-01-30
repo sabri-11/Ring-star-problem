@@ -37,7 +37,7 @@ function interfaceGraphhique_anneauEtoile(coords, stations, affect, ordreDeVisit
     push!(cycleX, coords[ordreDeVisite[1]][1])
     push!(cycleY, coords[ordreDeVisite[1]][2])
 
-    plot!(p, cycleX, cycleY, color=:black, linewidth=2, label="Métro")
+    plot!(p, cycleX, cycleY, color=:black, linewidth=2, label="Lignes")
 
     # affichage des stations 
     # On retire le dernier point (doublon de fermeture) pour ne pas afficher deux fois l'étoile
@@ -57,7 +57,7 @@ function interfaceGraphhique_anneauEtoile(coords, stations, affect, ordreDeVisit
         (x, y) = coords[s]
         annotate!(p, x, y+decalageY, text(string(k), 10, :black, :bottom))
     end
-
+    savefig(p, "../graphique/sol.png")
     display(p)
 end
 
@@ -194,10 +194,10 @@ function ae_plne(p, chemin, alpha)
     if p == 1
         return uneStation(affect, nbEtats, d)
     end 
-    # m = Model(GLPLK.Optimizer)
-    m = Model(CPLEX.Optimizer)
+    m = Model(GLPLK.Optimizer)
+    # m = Model(CPLEX.Optimizer)
     set_silent(m)
-    tMax = 600.0     # temps max pour trouver une solution (en s)
+    tMax = 120.0     # temps max pour trouver une solution (en s)
     set_time_limit_sec(m, tMax)
 
     @variable(m, y[1:nbEtats, 1:nbEtats], Bin)      # yii = 1 si p est une station et yij = 1 si la ville i est affectée à la station j

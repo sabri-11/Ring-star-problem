@@ -1,6 +1,6 @@
 using JuMP
 using GLPK
-using CPLEX
+# using CPLEX
 using Random
 using BenchmarkTools
 using Plots
