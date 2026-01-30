@@ -1,22 +1,12 @@
 historique des tests réalisés : 
 
 Test de solution : 
-Nombre de stations à placer : 7
-Méthode p-Médian choisie : métaheuristique gloutonne
-Méthode TSP choisie : plus proche voisin 2 opt
-Alpha = 1
-Coût de la solution : 52097.13
-Temps d'exécution : 0.000896423
-
-------------------------------------
-
-Test de solution : 
-Nombre de stations à placer : 7
-Méthode p-Médian choisie : métaheuristique gloutonne
-Méthode TSP choisie : plus proche voisin 2 opt
-Alpha = 1
-Coût de la solution : 51880.01
-Temps d'exécution : 0.001005777
+Nombre de stations à placer : 30
+Méthode p-Médian choisie : PL
+Méthode TSP choisie : plus proche voisin
+Alpha = 0
+Coût de la solution : 6263.52
+Temps d'exécution : 0.028241326
 
 ------------------------------------
 
