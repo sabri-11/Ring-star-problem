@@ -1,7 +1,7 @@
 include("pMedian.jl")
 include("tsp.jl")
 include("anneauEtoile.jl")
-include("mainFonctions")
+include("mainFonctions.jl")
 
 
 
@@ -13,9 +13,9 @@ const UNBOUNDED = JuMP.MOI.DUAL_INFEASIBLE;
 
 
 function main()
-    # fichier = choixFichier()
-    # chemin = joinpath("..", "tspFile", fichier)
-    chemin = "../tspFile/att48.tsp"
+    fichier = choixFichier()
+    chemin = joinpath("..", "tspFile", fichier)
+    # chemin = "../tspFile/att48.tsp"
 
     coords, = initCoordN(chemin)
     nbEtats = length(coords)
@@ -43,10 +43,8 @@ function main()
 
         p = defNbStations(nbEtats)
         stations, affect, ordreDeVisite, cout, temps, nbEssais = executionProgramme(p, chemin, choixCycle, choixMethode, alpha)
-        # println(f, "stations : $stations de coord : $([coords[i] for i in stations])")
-        # println(f, "ordre de visite : $ordreDeVisite")
         interfaceGraphhique_anneauEtoile(coords, stations, affect, ordreDeVisite, cout)
-        remplirHistorique(f, choixCycle, choixMethode, p, cout, temps, nbEssais, alpha)
+        remplirHistorique(f, choixCycle, choixMethode, p, stations, ordreDeVisite, affect, cout, temps, nbEssais, alpha)
         
     end
 end

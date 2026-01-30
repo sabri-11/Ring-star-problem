@@ -194,7 +194,7 @@ function ae_plne(p, chemin, alpha)
     if p == 1
         return uneStation(affect, nbEtats, d)
     end 
-    m = Model(GLPLK.Optimizer)
+    m = Model(GLPK.Optimizer)
     # m = Model(CPLEX.Optimizer)
     set_silent(m)
     tMax = 120.0     # temps max pour trouver une solution (en s)

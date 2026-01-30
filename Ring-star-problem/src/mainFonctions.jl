@@ -60,7 +60,7 @@ end
 
 function choixPMedian()
 
-    println("\nChoisissez la méthode que vous souhaitez utiliser, entrez : \n
+    println("\nChoisissez la méthode de p-Médian que vous souhaitez utiliser, entrez : \n
     1 : heuristique gloutonne
     2 : Méta-heuristique gloutonne
     3 : heuristique aléatoire
@@ -145,7 +145,7 @@ end
 
 function choix3(p, chemin, choixCycle, alpha)
     println("Choisissez le nombres d'essais alétatoires que vous voulez effectuer : ")
-    print("\rNb essais aléatoires : ")
+    print("\rNb essais = ")
     nbEssais = defNbEssais()
     
     if choixCycle == 1
@@ -211,7 +211,7 @@ end
 
 function defNbEssais()
     while true
-        print("\nNb Essais : ")
+        print("\nNb Essais = ")
         nbEssais = tryparse(Int, readline())
         if !isnothing(nbEssais) && nbEssais > 0 
             print("\n")
@@ -223,7 +223,7 @@ function defNbEssais()
 
 end
 
-function remplirHistorique(f, choixCycle, choixMethode, p, cout, temps, nbEssais, alpha)
+function remplirHistorique(f, choixCycle, choixMethode, p, stations, ordreDeVisite, affect, cout, temps, nbEssais, alpha)
     if choixMethode == 1
         methodePmedian = "heuristique gloutonne"
 
@@ -279,6 +279,10 @@ function remplirHistorique(f, choixCycle, choixMethode, p, cout, temps, nbEssais
 
     println("Coût de la solution (à minimiser) : $(round(cout, digits=2))")
     println(f, "Coût de la solution : $(round(cout, digits=2))")
+
+    println(f, "stations choisies : $stations")
+    println(f, "ordre de visite : $ordreDeVisite")
+    afficherMedians(f,affect, stations)
     
     println("Temps d'exécution : $temps")
     println(f, "Temps d'exécution : $temps")
@@ -292,4 +296,18 @@ function remplirHistorique(f, choixCycle, choixMethode, p, cout, temps, nbEssais
 
     flush(f)
     
+end
+
+function afficherMedians(f, affect, stations)
+    println(f, "affectations des non médians au médian le plus proche : ")
+    for station in stations
+        print(f, "La station $station a les points affectés : ")
+        for i in 1:length(affect)
+            if affect[i] == station
+                print(f, "$i, ")
+            end
+        end
+        println(f)
+    end
+
 end
