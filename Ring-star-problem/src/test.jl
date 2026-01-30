@@ -54,19 +54,18 @@ function test_metaHeuristiqueGloutonne(p, nbTests)
 end
 
 
-function test_metaHeuristiqueRandom100iter(p, nbTests)
+function test_metaHeuristiqueRandom50iter(p, nbTests)
 
     coutMoyen = 0.0
     tempsMoyen = 0.0
 
     for i in 1:nbTests
-        res = @timed ae_ppv_metaHeuristiqueRandom(p, "../tspFile/att48.tsp", 100, 0)
+        res = @timed ae_ppv_metaHeuristiqueRandom(p, "../tspFile/att48.tsp", 50, 0)
         temps = res.time
         cout = res.value[4]
         print("(cout$i=$cout, temps$i=$temps)\t")
         coutMoyen += cout
         tempsMoyen += temps
-        
     end
 
     coutMoyen /= nbTests

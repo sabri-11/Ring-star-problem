@@ -160,7 +160,7 @@ function choix3(p, chemin, choixCycle, alpha)
 end
 
 function choix4(p, chemin, choixCycle, alpha)
-    println("Choisissez le nombres d'itérations d'amélioration de votre heuristique alétatoire à effectuer (100 recommandées) : ")
+    println("Choisissez le nombres d'itérations d'amélioration de votre heuristique alétatoire à effectuer(ne pas dépasser 50 recommandées) : ")
     print("\rNb essais itérations descente stochastique : ")
     nbEssais = defNbEssais()
 

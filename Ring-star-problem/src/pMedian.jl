@@ -211,7 +211,7 @@ function coutPmedian(coords, stations)
     return cout
 end
 
-function meilleureSolution(p, coords, nbEssais)
+function meilleureSolutionRandom(p, coords, nbEssais)
     minCout = Inf       # On va chercher le cout minimal
     bestStations = Int[]    # On voudra sauvegarder la station trouvée quand on a un coût minimal
     nbEtats = length(coords)  # Permet de ne pas recalculer length(coords) à de nombreuses reprises dans nos boucles et de devoir passer tout le tableau coords en arguments quand on a juste besoin du nb d'etats
@@ -247,7 +247,37 @@ end
 
 # Améliore une solution de stations en échangeant un Etat qui n'est pas une station avec un Etat qui en est une et voit si cela améliore notre solution
 # Permet d'obtenir une solution optimale locale pour un ensemble de stations données
-function applicationStochastique(p, coords, stations)
+function applicationStochastique_ppv(p, coords, stations, alpha)
+
+    if length(stations) <= 1
+        println("On ne peut pas utiliser la méta heuristique gloutonne car on n'a qu'une seule station et le point 1 est forcément une station, on ne peut donc pas l'échanger avec une autre.\n")
+        return stations, [1],coutPmedian(coords, stations)
+    end
+
+    nbEtats = length(coords)  
+    cpt = 2*nbEtats    # On fixe notre compteur arbitrairement en fct du nb d'Etats que l'on a
+    ordreDeVisite = plusProcheVoisin(coords, stations)
+    cout = coutPmedian(coords, stations) + coutTsp(coords, ordreDeVisite, alpha)
+    
+    while cpt > 0       
+        stationsTest = swapStation(stations, nbEtats)   # On fait un échange entre une stations et un Etats n'ayant pas de stations
+        ordreDeVisiteTest = plusProcheVoisin(coords, stationsTest)
+        coutTest = coutPmedian(coords, stationsTest) + coutTsp(coords, ordreDeVisite, alpha)   # On calcule le coût de cette nouvelle solution 
+        if coutTest < cout  # On va affecter cette nouvelles liste de stations si elle est une meilleure solution.
+            cpt = 2*nbEtats
+            stations = stationsTest
+            ordreDeVisite = ordreDeVisiteTest
+            cout = coutTest
+        else
+            cpt-=1   # Si on a fait lenght(coords) essais sans améliorations, on s'arrête.
+        end
+    end
+    return stations, ordreDeVisite, cout
+
+end
+
+# pareil mais utilise le cycle ppv 2 opt
+function applicationStochastique_ppv2opt(p, coords, stations, alpha)
 
     if length(stations) <= 1
         println("On ne peut pas utiliser la méta heuristique gloutonne car on n'a qu'une seule station et le point 1 est forcément une station, on ne peut donc pas l'échanger avec une autre.\n")
@@ -256,40 +286,64 @@ function applicationStochastique(p, coords, stations)
 
     nbEtats = length(coords)  
     cpt = 2*nbEtats    # On fixe notre compteur arbitrairement en fct du nb d'Etats que l'on a
-    cout = coutPmedian(coords, stations)
+    ordreDeVisite = plusProcheVoisin_2opt(coords, stations)
+    cout = coutPmedian(coords, stations) + coutTsp(coords, ordreDeVisite, alpha)
     
     while cpt > 0       
         stationsTest = swapStation(stations, nbEtats)   # On fait un échange entre une stations et un Etats n'ayant pas de stations
-        coutTest = coutPmedian(coords, stationsTest)   # On calcule le coût de cette nouvelle solution 
+        ordreDeVisiteTest = plusProcheVoisin_2opt(coords, stationsTest)
+        coutTest = coutPmedian(coords, stationsTest) + coutTsp(coords, ordreDeVisite, alpha)   # On calcule le coût de cette nouvelle solution 
         if coutTest < cout  # On va affecter cette nouvelles liste de stations si elle est une meilleure solution.
             cpt = 2*nbEtats
             stations = stationsTest
+            ordreDeVisite = ordreDeVisiteTest
             cout = coutTest
         else
             cpt-=1   # Si on a fait lenght(coords) essais sans améliorations, on s'arrête.
         end
     end
-    return stations, cout
+    return stations, ordreDeVisite, cout
 
 end
 
 # Va effectuer nbEssais itérations en prenant un ensemble de stations aléatoires que l'on va améliorer avec notre application stochastique. On garde à la fin le meilleur résultat amélioré.
 # Permet d'atteindre un maximum global et de ne pas rester bloquer dans un maximum local que l'on obtient avec une unique application stochastique.
-function iterationsStochastiqueRandom(p, coords, nbEssais)
+function iterationsStochastiqueRandom_ppv(p, coords, nbEssais, alpha)
 
     bestCout= Inf
     bestStations = Int[]
+    bestOrdreDeVisite = Int[]
     nbEtats = length(coords)
 
     for i in 1:nbEssais 
         stations = defStationsRandom(p, nbEtats)
-        stationsTest, cout = applicationStochastique(p, coords, stations)
+        stationsTest, ordreDeVisiteTest, cout = applicationStochastique_ppv(p, coords, stations, alpha)
         if cout < bestCout
             bestCout = cout
             bestStations = copy(stationsTest)
+            bestOrdreDeVisite = copy(ordreDeVisiteTest)
         end
     end
-    return bestStations, bestCout
+    return bestStations, bestOrdreDeVisite, bestCout
+end
+
+function iterationsStochastiqueRandom_ppv2opt(p, coords, nbEssais, alpha)
+
+    bestCout= Inf
+    bestStations = Int[]
+    bestOrdreDeVisite = Int[]
+    nbEtats = length(coords)
+
+    for i in 1:nbEssais 
+        stations = defStationsRandom(p, nbEtats)
+        stationsTest, ordreDeVisiteTest, cout = applicationStochastique_ppv2opt(p, coords, stations, alpha)
+        if cout < bestCout
+            bestCout = cout
+            bestStations = copy(stationsTest)
+            bestOrdreDeVisite = copy(ordreDeVisiteTest)
+        end
+    end
+    return bestStations, bestOrdreDeVisite, bestCout
 end
 
 ############################################# Fonctions pour PLNE Compacte ############################################

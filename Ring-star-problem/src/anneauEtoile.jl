@@ -83,7 +83,7 @@ end
 function ae_ppv_random(p, chemin, nbEssais, alpha)
     coords, = initCoordN(chemin)
 
-    stations = meilleureSolution(p, coords, nbEssais)
+    stations = meilleureSolutionRandom(p, coords, nbEssais)
 
     affect = affecterMedians(coords, stations)
     ordreDeVisite = plusProcheVoisin(coords, stations)
@@ -96,11 +96,9 @@ function ae_ppv_metaHeuristiqueGlouton(p, chemin, alpha)
     coords, minX, maxX, minY, maxY = initCoordN(chemin)
 
     stations = defStationsGlouton(p, coords, minX, maxX, minY, maxY)
-    stations, cout_pMedian = applicationStochastique(p, coords, stations)
+    stations, ordreDeVisite, cout = applicationStochastique_ppv(p, coords, stations, alpha)
 
     affect = affecterMedians(coords, stations)
-    ordreDeVisite = plusProcheVoisin(coords, stations)
-    cout = cout_pMedian + coutTsp(coords, ordreDeVisite, alpha)
 
     return stations, affect, ordreDeVisite, cout
 end
@@ -108,11 +106,9 @@ end
 function ae_ppv_metaHeuristiqueRandom(p, chemin, nbEssais, alpha)
     coords, = initCoordN(chemin)
 
-    stations, cout_pMedian = iterationsStochastiqueRandom(p, coords, nbEssais)
+    stations, ordreDeVisite, cout = iterationsStochastiqueRandom_ppv(p, coords, nbEssais, alpha)
 
     affect = affecterMedians(coords, stations)
-    ordreDeVisite = plusProcheVoisin(coords, stations)
-    cout = cout_pMedian + coutTsp(coords, ordreDeVisite, alpha)
 
     return stations, affect, ordreDeVisite, cout
 end
@@ -140,7 +136,7 @@ end
 function ae_ppv2opt_random(p, chemin, nbEssais, alpha)
     coords, = initCoordN(chemin)
 
-    stations = meilleureSolution(p, coords, nbEssais)
+    stations = meilleureSolutionRandom(p, coords, nbEssais)
 
     affect = affecterMedians(coords, stations)
     ordreDeVisite = plusProcheVoisin_2opt(coords, stations)
@@ -152,22 +148,18 @@ function ae_ppv2opt_metaHeuristiqueGlouton(p, chemin, alpha)
     coords, minX, maxX, minY, maxY = initCoordN(chemin)
 
     stations = defStationsGlouton(p, coords, minX, maxX, minY, maxY)
-    stations, cout_pMedian = applicationStochastique(p, coords, stations)
+    stations, ordreDeVisite, cout = applicationStochastique_ppv2opt(p, coords, stations, alpha)
 
     affect = affecterMedians(coords, stations)
-    ordreDeVisite = plusProcheVoisin_2opt(coords, stations)
-    cout = cout_pMedian + coutTsp(coords, ordreDeVisite, alpha)
+
     return stations, affect, ordreDeVisite, cout
 end
 
 function ae_ppv2opt_metaHeuristiqueRandom(p, chemin, nbEssais, alpha)
     coords, = initCoordN(chemin)
 
-    stations, cout_pMedian = iterationsStochastiqueRandom(p, coords, nbEssais)
-
+    stations, ordreDeVisite, cout = iterationsStochastiqueRandom_ppv2opt(p, coords, nbEssais, alpha)
     affect = affecterMedians(coords, stations)
-    ordreDeVisite = plusProcheVoisin_2opt(coords, stations)
-    cout = cout_pMedian + coutTsp(coords, ordreDeVisite, alpha)
     return stations, affect, ordreDeVisite, cout
 end
 
