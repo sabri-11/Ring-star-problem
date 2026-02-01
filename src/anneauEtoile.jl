@@ -75,7 +75,7 @@ function ae_ppv_glouton(p, chemin, alpha)
 
     affect = affecterMedians(coords, stations)
     ordreDeVisite = plusProcheVoisin(coords, stations)
-    cout = coutPmedian(coords, stations) + coutTsp(coords, ordreDeVisite, alpha)
+    cout = coutPmedian(coords, stations) + coutTsp(p, coords, ordreDeVisite, alpha)
     
     return stations, affect, ordreDeVisite, cout
 end
@@ -87,7 +87,7 @@ function ae_ppv_random(p, chemin, nbEssais, alpha)
 
     affect = affecterMedians(coords, stations)
     ordreDeVisite = plusProcheVoisin(coords, stations)
-    cout = coutPmedian(coords, stations) + coutTsp(coords, ordreDeVisite, alpha)
+    cout = coutPmedian(coords, stations) + coutTsp(p, coords, ordreDeVisite, alpha)
 
     return stations, affect, ordreDeVisite, cout
 end
@@ -100,7 +100,7 @@ function ae_ppv_metaHeuristiqueGlouton(p, chemin, alpha)
 
     affect = affecterMedians(coords, stations)
     ordreDeVisite = plusProcheVoisin(coords, stations)
-    cout = cout_pMedian + coutTsp(coords, ordreDeVisite, alpha)
+    cout = cout_pMedian + coutTsp(p, coords, ordreDeVisite, alpha)
 
     return stations, affect, ordreDeVisite, cout
 end
@@ -112,7 +112,7 @@ function ae_ppv_metaHeuristiqueRandom(p, chemin, nbEssais, alpha)
 
     affect = affecterMedians(coords, stations)
     ordreDeVisite = plusProcheVoisin(coords, stations)
-    cout = cout_pMedian + coutTsp(coords, ordreDeVisite, alpha)
+    cout = cout_pMedian + coutTsp(p, coords, ordreDeVisite, alpha)
 
     return stations, affect, ordreDeVisite, cout
 end
@@ -120,7 +120,7 @@ end
 function ae_ppv_plne(p, chemin, alpha)
     coords, stations, affect, cout_pMedian = pMedian_plneCompacte(p, chemin)
     ordreDeVisite = plusProcheVoisin(coords, stations)
-    cout = cout_pMedian + coutTsp(coords, ordreDeVisite, alpha)
+    cout = cout_pMedian + coutTsp(p, coords, ordreDeVisite, alpha)
 
     return stations, affect, ordreDeVisite, cout
 end
@@ -132,7 +132,7 @@ function ae_ppv2opt_glouton(p, chemin, alpha)
 
     affect = affecterMedians(coords, stations)
     ordreDeVisite = plusProcheVoisin_2opt(coords, stations)
-    cout = coutPmedian(coords, stations) + coutTsp(coords, ordreDeVisite, alpha)
+    cout = coutPmedian(coords, stations) + coutTsp(p, coords, ordreDeVisite, alpha)
 
     return stations, affect, ordreDeVisite, cout
 end
@@ -144,7 +144,7 @@ function ae_ppv2opt_random(p, chemin, nbEssais, alpha)
 
     affect = affecterMedians(coords, stations)
     ordreDeVisite = plusProcheVoisin_2opt(coords, stations)
-    cout = coutPmedian(coords, stations) + coutTsp(coords, ordreDeVisite, alpha)
+    cout = coutPmedian(coords, stations) + coutTsp(p, coords, ordreDeVisite, alpha)
     return stations, affect, ordreDeVisite, cout
 end
 
@@ -156,7 +156,8 @@ function ae_ppv2opt_metaHeuristiqueGlouton(p, chemin, alpha)
 
     affect = affecterMedians(coords, stations)
     ordreDeVisite = plusProcheVoisin_2opt(coords, stations)
-    cout = cout_pMedian + coutTsp(coords, ordreDeVisite, alpha)
+    cout = cout_pMedian + coutTsp(p, coords, ordreDeVisite, alpha)
+
     return stations, affect, ordreDeVisite, cout
 end
 
@@ -167,14 +168,16 @@ function ae_ppv2opt_metaHeuristiqueRandom(p, chemin, nbEssais, alpha)
 
     affect = affecterMedians(coords, stations)
     ordreDeVisite = plusProcheVoisin_2opt(coords, stations)
-    cout = cout_pMedian + coutTsp(coords, ordreDeVisite, alpha)
+    cout = cout_pMedian + coutTsp(p, coords, ordreDeVisite, alpha)
+    
+    
     return stations, affect, ordreDeVisite, cout
 end
 
 function ae_ppv2opt_plne(p, chemin, alpha)
     coords, stations, affect, cout_pMedian = pMedian_plneCompacte(p, chemin)
     ordreDeVisite = plusProcheVoisin_2opt(coords, stations)
-    cout = cout_pMedian + coutTsp(coords, ordreDeVisite, alpha)
+    cout = cout_pMedian + coutTsp(p, coords, ordreDeVisite, alpha)
     return stations, affect, ordreDeVisite, cout
 end
 
@@ -193,6 +196,8 @@ function ae_plne(p, chemin, alpha)
     # On avait une erreur si on décidait de placer qu'une seule station car le solveur ne pouvait pas faire de cycle, on gère donc ce cas spécial. 
     if p == 1
         return uneStation(affect, nbEtats, d)
+    elseif p == 2
+        alpha /= 2  # permet de diviser par 2 le coût du cycle obtenu si p=2
     end 
     m = Model(GLPK.Optimizer)
     # m = Model(CPLEX.Optimizer)

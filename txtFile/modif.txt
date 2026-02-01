@@ -1,0 +1,12 @@
+En observant les résultats obtenus pour p=2, on remarque graphiquement que l'arête reliant les deux points semble plus épasisses que  
+d'habitudes. 
+On emets alors l'hypothèses que le programme trace deux fois cette arrête pour faire un bon cycle, il trace l'arrête de 1->2 puis de 2->1. 
+
+Pour vérifier cela, on créer ce test : 
+'test_coutTsp_mhRandom(p)' dans le fichier 'test.jl'. Pour p=2 et p=3, il calcule à la main la taille du cycle et la taille renvoyée par
+le programme. S'il y a une erreur, il nous le dit.
+
+On remarque maintenant que pour p=3, le coût du tsp est correct, mais pour p=2, le coût calculé  par le programme est 2 fois plus grand que  celui calculé à la  main. 
+Pour résoudre ce problème, on rajoute p en argument dans la fonction 'coutTsp' du fichier 'tsp.jl' et on fait une vérification : 
+Si p = 2, alors on modifie le cout par 2. 
+

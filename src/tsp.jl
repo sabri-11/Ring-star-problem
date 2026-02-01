@@ -2,7 +2,7 @@ include("pMedian.jl")
 
 
 # Le cout du tsp est calculé en fonction de la longueru total du cycle
-function coutTsp(coords, ordreDeVisite, alpha)
+function coutTsp(p, coords, ordreDeVisite, alpha)
     cout = 0.0
     for i in 1:(length(ordreDeVisite)-1)
         station1 = ordreDeVisite[i]
@@ -17,6 +17,10 @@ function coutTsp(coords, ordreDeVisite, alpha)
     (x1, y1) = coords[1]
     distFinal = sqrt((xf-x1)^2 + (yf-y1)^2)
     cout += distFinal
+
+    if p==2
+        cout /= 2
+    end
 
     return cout*alpha
 end
