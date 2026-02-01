@@ -2,13 +2,13 @@ include("pMedian.jl")
 include("tsp.jl")
 include("anneauEtoile.jl")
 
-function test_heuristiqueRandom100iter(p, nbTests)
+function test_heuristiqueRandom100iter(p, nbTests, alpha)
 
     coutMoyen = 0.0
     tempsMoyen = 0.0
 
     for i in 1:nbTests
-        res = @timed ae_ppv_random(p, "../tspFile/att48.tsp", 100, 0)
+        res = @timed ae_ppv_random(p, "../tspFile/att48.tsp", 100, alpha)
         temps = res.time
         cout = res.value[4]
         print("(cout$i=$cout, temps$i=$temps)\t")
@@ -28,13 +28,13 @@ function test_heuristiqueRandom100iter(p, nbTests)
 end
 
 
-function test_metaHeuristiqueGloutonne(p, nbTests)
+function test_metaHeuristiqueGloutonne(p, nbTests, alpha)
 
     coutMoyen = 0.0
     tempsMoyen = 0.0
 
     for i in 1:nbTests
-        res = @timed ae_ppv_metaHeuristiqueGlouton(p, "../tspFile/att48.tsp", 0)
+        res = @timed ae_ppv_metaHeuristiqueGlouton(p, "../tspFile/att48.tsp", alpha)
         temps = res.time
         cout = res.value[4]
         print("(cout$i=$cout, temps$i=$temps)\t")
@@ -54,13 +54,13 @@ function test_metaHeuristiqueGloutonne(p, nbTests)
 end
 
 
-function test_metaHeuristiqueRandom100iter(p, nbTests)
+function test_metaHeuristiqueRandom100iter(p, nbTests, alpha)
 
     coutMoyen = 0.0
     tempsMoyen = 0.0
 
     for i in 1:nbTests
-        res = @timed ae_ppv_metaHeuristiqueRandom(p, "../tspFile/att48.tsp", 100, 0)
+        res = @timed ae_ppv_metaHeuristiqueRandom(p, "../tspFile/att48.tsp", 100, alpha)
         temps = res.time
         cout = res.value[4]
         print("(cout$i=$cout, temps$i=$temps)\t")

@@ -208,7 +208,7 @@ function ae_plne(p, chemin, alpha)
 
 
     @constraint(m, sum(y[i, i] for i in 1:nbEtats) == p)    # cte (1)
-    @constraint(m, y[1, 1] == 1)       # On doit forcer le point 1 à être une station
+    @constraint(m, y[1, 1] == 1)       # (cte 8) On doit forcer le point 1 à être une station
 
     for i in 1:nbEtats
         @constraint(m, sum(y[i, j] for j in 1:nbEtats) == 1)    # cte (2)
@@ -217,7 +217,7 @@ function ae_plne(p, chemin, alpha)
         @constraint(m, sum(x[i, j] for j in 1:nbEtats) == y[i, i])   # cte (4)
         @constraint(m, sum(x[j, i] for j in 1:nbEtats) == y[i, i])   # cte (4)
 
-        @constraint(m, x[i, i] == 0)    # il ne peut pas y avoir d'arêtes boucles sur une station
+        @constraint(m, x[i, i] == 0)    # (cte 9) il ne peut pas y avoir d'arêtes boucles sur une station
 
     end
 

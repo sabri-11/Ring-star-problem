@@ -1,5 +1,6 @@
-depotTemp = /tmp/julia_depot_"e12210775"_ringStarProblem
-runUniv = JULIA_DEPOT_PATH=$(depotTemp) julia
+userName = $(shell whoami)
+depotTemp = /tmp/julia_depot_$(userName)_ringStarProblem
+runU = JULIA_DEPOT_PATH=$(depotTemp) julia
 main = main.jl
 
 all: setupUniv setup run runUniv clearUniv
@@ -18,7 +19,7 @@ setup:
 	Pkg.precompile()'
 
 runUniv:
-	$(runUniv) $(main)
+	$(runU) $(main)
 
 run:
 	julia $(main)
