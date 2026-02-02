@@ -10,3 +10,6 @@ On remarque maintenant que pour p=3, le coût du tsp est correct, mais pour p=2,
 Pour résoudre ce problème, on rajoute p en argument dans la fonction 'coutTsp' du fichier 'tsp.jl' et on fait une vérification : 
 Si p = 2, alors on modifie le cout par 2. 
 
+
+modif makefile : 
+Dans setupUniv, $(runU) au lieu de $(runUniv)
