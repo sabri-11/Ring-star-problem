@@ -6,7 +6,7 @@ main = main.jl
 all: setupUniv setup run runUniv clearUniv
 
 setupUniv:
-	$(runUniv) -e 'using Pkg; \
+	$(runU) -e 'using Pkg; \
 	Pkg.add(name="GR", version="0.66"); \
 	Pkg.pin("GR"); \
 	Pkg.add(name="Plots", version="1.32"); \
